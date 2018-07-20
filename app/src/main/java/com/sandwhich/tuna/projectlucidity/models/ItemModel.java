@@ -1,37 +1,30 @@
 package com.sandwhich.tuna.projectlucidity.models;
 
+import android.support.v7.widget.AppCompatImageView;
+
 public class ItemModel {
-    String itemName;
-    Double itemPrice;
-    int drawableResource;
+    String parentWebsite,timeStamp,articleHeadline;
+    AppCompatImageView headerImage;
 
-    public String getItemName() {
-        return itemName;
+    public ItemModel() {
     }
 
-    public ItemModel(String itemName, Double itemPrice, int drawableResource) {
-        this.itemName = itemName;
-        this.itemPrice = itemPrice;
-        this.drawableResource = drawableResource;
+    public String getParentWebsite() {
+        return parentWebsite;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
+    public String getTimeStamp() {
+        return timeStamp;
     }
 
-    public Double getItemPrice() {
-        return itemPrice;
+    public String getArticleHeadline() {
+        return articleHeadline;
     }
 
-    public void setItemPrice(Double itemPrice) {
-        this.itemPrice = itemPrice;
-    }
+    public ItemModel(String parentWebsite, String timeStamp, String articleHeadline) {
+        this.parentWebsite = parentWebsite;
+        this.timeStamp = timeStamp;
+        this.articleHeadline = articleHeadline;
 
-    public int getDrawableResource() {
-        return drawableResource;
-    }
-
-    public void setDrawableResource(int drawableResource) {
-        this.drawableResource = drawableResource;
     }
 }

@@ -26,19 +26,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initUI() {
-        rv1=findViewById(R.id.rv1);
+        rv1=findViewById(R.id.main_recycler);
         RecyclerAdapter myAdapter = new RecyclerAdapter(this);
         itemModels = new ArrayList<>();
         int i =5;
         do{
-            itemModels.add(new ItemModel("Prod1",4000.0,R.drawable.ic_launcher_background));
+            itemModels.add(new ItemModel("www.huffpost.com","8h","National Emergency! \nNation in danger"));
             i--;
         }
         while (i>=0);
         myAdapter.addItems(itemModels);
         rv1.setAdapter(myAdapter);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-        mLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv1.setLayoutManager(mLinearLayoutManager);
         //todo continue testing with recycler view
     }

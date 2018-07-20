@@ -2,6 +2,7 @@ package com.sandwhich.tuna.projectlucidity.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
     @Override
     public void onBindViewHolder(RecyclerHolder holder, int position) {
         //todo assign data to recyler view items from itemModels collection object
+        holder.articleHeadline.setText(itemModels.get(position).getArticleHeadline());
+        holder.parentWebsite.setText(itemModels.get(position).getParentWebsite());
+        holder.timeStamp.setText(itemModels.get(position).getTimeStamp());
     }
 
     @Override
@@ -46,13 +50,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
     }
 
     class RecyclerHolder extends RecyclerView.ViewHolder{
-        TextView itemName,itemPrice;
-        ImageView itemImage;
+        TextView parentWebsite,timeStamp,articleHeadline;
+        AppCompatImageView headerImage;
         public RecyclerHolder(View itemView) {
             super(itemView);
-            itemName=(TextView)itemView.findViewById(R.id.item_name);
-            itemPrice=(TextView)itemView.findViewById(R.id.item_price);
-            itemImage=(ImageView)itemView.findViewById(R.id.item_image);
+            parentWebsite = itemView.findViewById(R.id.parent_website);
+            timeStamp= itemView.findViewById(R.id.timestamp);
+            articleHeadline= itemView.findViewById(R.id.article_header_content);
+            headerImage= itemView.findViewById(R.id.article_header_image);
         }
     }
 }
