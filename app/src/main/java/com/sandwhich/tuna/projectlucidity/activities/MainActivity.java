@@ -1,4 +1,4 @@
-package com.sandwhich.tuna.projectlucidity;
+package com.sandwhich.tuna.projectlucidity.activities;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.LinearLayout;
 
+import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
 import com.sandwhich.tuna.projectlucidity.models.ItemModel;
 

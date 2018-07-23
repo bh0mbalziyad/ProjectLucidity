@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "766466455558",
+    "firebase_url": "https://projectlucidity-c07ce.firebaseio.com",
+    "project_id": "projectlucidity-c07ce",
+    "storage_bucket": "projectlucidity-c07ce.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:766466455558:android:fdcd04195f094d34",
+        "android_client_info": {
+          "package_name": "com.sandwhich.tuna.projectlucidity"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "766466455558-7io65fm2h2545op8fl3va41nv96681ql.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sandwhich.tuna.projectlucidity",
+            "certificate_hash": "a068c19a92c69474e750de04f3d59d2f5c5500cf"
+          }
+        },
+        {
+          "client_id": "766466455558-i5n394lm1vbu17htpokso4q6j0ve2p2u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoaG-5kH8CwIDl9gInodvox8xR9P9y9yk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "766466455558-i5n394lm1vbu17htpokso4q6j0ve2p2u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

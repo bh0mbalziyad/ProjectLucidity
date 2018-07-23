@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/viewContainer"
+        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textSize="50sp"
+            android:textColor="#2367ab"
+            android:text="Welcome!"
+            android:layout_gravity="center"
+            android:textAlignment="gravity"
+            android:id="@+id/welcome_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/signin"
+            android:layout_margin="50dp"
+            android:padding="10dp"
+            android:textColor="#ffffff"
+            android:layout_gravity="center"
+            android:textAlignment="gravity"
+            android:text="Continue where you left off?"
+            android:backgroundTint="#2367ab"
+            android:background="@drawable/rounded_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/signup"
+            android:padding="10dp"
+            android:textColor="#ffffff"
+            android:text="New here? Come on in!"
+            android:backgroundTint="#2367ab"
+            android:background="@drawable/rounded_button"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:textAlignment="gravity"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+</RelativeLayout>
