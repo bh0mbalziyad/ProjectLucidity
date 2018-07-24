@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
@@ -18,6 +19,10 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView rv1;
     List<ItemModel> itemModels;
 
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(MainActivity.this,"BackPressed",Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         myAdapter.addItems(itemModels);
         rv1.setAdapter(myAdapter);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-        mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         rv1.setLayoutManager(mLinearLayoutManager);
         //todo continue testing with recycler view
     }

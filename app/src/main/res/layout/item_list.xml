@@ -8,29 +8,32 @@
         android:id="@+id/elementContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <LinearLayout
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentTop="true"
             android:id="@+id/content_overview"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:orientation="horizontal">
+
             <TextView
                 android:id="@+id/parent_website"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_margin="2dp"
                 android:padding="2dp"
-                android:textColor="#2238a4"
                 android:text="Parent website"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:textColor="#2238a4" />
+
             <TextView
                 android:id="@+id/timestamp"
-                android:padding="2dp"
-                android:layout_margin="2dp"
-                android:text="Timestamp"
-                android:textColor="#f45d22"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:padding="2dp"
+                android:text="Timestamp"
+                android:textColor="#f45d22" />
         </LinearLayout>
         <android.support.v7.widget.AppCompatImageView
             android:layout_below="@id/content_overview"

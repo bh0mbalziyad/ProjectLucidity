@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "766466455558-elvto5r3irim40tu979og1n5juavo08i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sandwhich.tuna.projectlucidity",
+            "certificate_hash": "b18dba954a0ca9b400cf659da4074212f0f40d40"
+          }
+        },
+        {
           "client_id": "766466455558-i5n394lm1vbu17htpokso4q6j0ve2p2u.apps.googleusercontent.com",
           "client_type": 3
         }

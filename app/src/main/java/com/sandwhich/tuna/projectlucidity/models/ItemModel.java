@@ -9,6 +9,12 @@ public class ItemModel {
     public ItemModel() {
     }
 
+    public ItemModel(String parentWebsite, String timeStamp, String articleHeadline) {
+        this.parentWebsite = parentWebsite;
+        this.timeStamp = timeStamp;
+        this.articleHeadline = articleHeadline;
+    }
+
     public String getParentWebsite() {
         return parentWebsite;
     }
@@ -19,12 +25,5 @@ public class ItemModel {
 
     public String getArticleHeadline() {
         return articleHeadline;
-    }
-
-    public ItemModel(String parentWebsite, String timeStamp, String articleHeadline) {
-        this.parentWebsite = parentWebsite;
-        this.timeStamp = timeStamp;
-        this.articleHeadline = articleHeadline;
-
     }
 }

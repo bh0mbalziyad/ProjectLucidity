@@ -1,5 +1,6 @@
 package com.sandwhich.tuna.projectlucidity.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +33,7 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
         switch (view.getId()){
             case R.id.signin:
                 p("Clicked sign in");
+                startActivity(new Intent(this,LoginActivity.class));
                 break;
             case R.id.signup:
                 p("Clicked sign up");
