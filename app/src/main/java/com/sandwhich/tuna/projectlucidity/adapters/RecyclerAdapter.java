@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sandwhich.tuna.projectlucidity.R;
+import com.sandwhich.tuna.projectlucidity.models.ArticleDataModel;
 import com.sandwhich.tuna.projectlucidity.models.ItemModel;
 
 import java.util.ArrayList;
@@ -18,14 +19,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.RecyclerHolder> {
-    public final List<ItemModel> itemModels = new ArrayList<>();
+    public final List<ArticleDataModel> itemModels = new ArrayList<>();
     public static Context context;
 
     public RecyclerAdapter(Context c){
         context = c;
     }
 
-    public void addItems(@NonNull Collection<ItemModel> models){
+    public void addItems(@NonNull Collection<ArticleDataModel> models){
         itemModels.addAll(models);
         notifyItemRangeInserted(itemModels.size()-1,itemModels.size());
     }
@@ -39,9 +40,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
     @Override
     public void onBindViewHolder(RecyclerHolder holder, int position) {
         //todo assign data to recyler view items from itemModels collection object
-        holder.articleHeadline.setText(itemModels.get(position).getArticleHeadline());
-        holder.parentWebsite.setText(itemModels.get(position).getParentWebsite());
-        holder.timeStamp.setText(itemModels.get(position).getTimeStamp());
+        holder.parentWebsite.setText(itemModels.get(position).getHost());
+        holder.articleHeadline.setText(itemModels.get(position).getHeadline());
+        holder.timeStamp.setText("8h");
+
     }
 
     @Override

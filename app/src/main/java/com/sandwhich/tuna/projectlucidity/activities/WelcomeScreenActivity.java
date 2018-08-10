@@ -2,12 +2,16 @@ package com.sandwhich.tuna.projectlucidity.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.sandwhich.tuna.projectlucidity.R;
 
 public class WelcomeScreenActivity extends AppCompatActivity implements View.OnClickListener {
@@ -15,7 +19,28 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+        FirebaseUser mUser= FirebaseAuth.getInstance().getCurrentUser();
+        if (mUser!=null){
+            startActivity(new Intent(WelcomeScreenActivity.this,MainActivity.class));
+        }
         initUI();
+    }
+    boolean doubleBackPressedToExit = false;
+    @Override
+    public void onBackPressed() {
+        if(doubleBackPressedToExit){
+            super.onBackPressed();
+        }
+
+        doubleBackPressedToExit = true;
+
+        Toast.makeText(WelcomeScreenActivity.this,"Press back again to exit.",Toast.LENGTH_SHORT).show();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                doubleBackPressedToExit = false;
+            }
+        }, 2000);
     }
 
     private void p(String s){
