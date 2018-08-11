@@ -2,7 +2,7 @@ package com.sandwhich.tuna.projectlucidity.models;
 
 import com.google.firebase.database.Exclude;
 
-public class ArticleDataModel {
+public class Post {
     String headline,description,imageUrl,host,postUrl;
     @Exclude public String urlForFirebasePath;
 
@@ -18,23 +18,23 @@ public class ArticleDataModel {
         this.postUrl = postUrl;
     }
 
-    public ArticleDataModel(){
+    public Post(){
         //empty default constructor for firebase
     }
 
-    public ArticleDataModel(String headline, String description, String imageUrl, String host, String postUrl) {
+    public Post(String headline, String description, String imageUrl, String host, String postUrl) {
         this.headline = headline;
         this.description = description;
         this.imageUrl = imageUrl;
         this.host = host;
         this.postUrl = postUrl;
-        this.urlForFirebasePath = postUrl
-                .replace(".","-")
-                .replace("$","-")
-                .replace("[","-")
-                .replace("]","-")
-                .replace("#","-")
-                .replace("/","-");
+        this.urlForFirebasePath = postUrl;
+//                .replace(".","-")
+//                .replace("$","-")
+//                .replace("[","-")
+//                .replace("]","-")
+//                .replace("#","-")
+//                .replace("/","-");
 
     }
 

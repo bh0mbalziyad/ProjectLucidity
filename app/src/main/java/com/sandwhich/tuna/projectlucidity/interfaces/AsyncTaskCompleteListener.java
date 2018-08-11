@@ -2,8 +2,8 @@ package com.sandwhich.tuna.projectlucidity.interfaces;
 
 import android.app.ProgressDialog;
 
-import com.sandwhich.tuna.projectlucidity.models.ArticleDataModel;
+import com.sandwhich.tuna.projectlucidity.models.Post;
 
 public interface AsyncTaskCompleteListener {
-    public void onTaskComplete(ArticleDataModel result, ProgressDialog pd, int responseCode);
+    public void onTaskComplete(Post result, ProgressDialog pd, int responseCode);
 }

@@ -7,28 +7,36 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sandwhich.tuna.projectlucidity.R;
-import com.sandwhich.tuna.projectlucidity.models.ArticleDataModel;
-import com.sandwhich.tuna.projectlucidity.models.ItemModel;
+import com.sandwhich.tuna.projectlucidity.models.Post;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.RecyclerHolder> {
-    public final List<ArticleDataModel> itemModels = new ArrayList<>();
+    public final List<Post> itemModels = new ArrayList<>();
     public static Context context;
 
     public RecyclerAdapter(Context c){
         context = c;
     }
 
-    public void addItems(@NonNull Collection<ArticleDataModel> models){
+    public void addItems(@NonNull Collection<Post> models){
         itemModels.addAll(models);
         notifyItemRangeInserted(itemModels.size()-1,itemModels.size());
+    }
+
+    public int clearItems(){
+        try{
+            itemModels.clear();
+            return 1;
+        }
+        catch (Exception ex){
+            return -1;
+        }
     }
 
     @Override

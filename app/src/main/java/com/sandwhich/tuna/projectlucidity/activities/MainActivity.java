@@ -33,13 +33,15 @@ import com.google.firebase.database.ValueEventListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
 import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
-import com.sandwhich.tuna.projectlucidity.models.ArticleDataModel;
+import com.sandwhich.tuna.projectlucidity.models.Post;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.HttpUrl;
 
@@ -50,13 +52,15 @@ public class MainActivity extends AppCompatActivity {
     TextInputEditText postURL;
     RecyclerView newsFeed;
     RecyclerAdapter newsFeedAdapter;
-
+    List<Post> retrievedPosts;
+    //todo add item-touch-helper to adapter to listen for click events
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         mRef = FirebaseDatabase.getInstance().getReference("posts");
+        retrievedPosts = new ArrayList<>();
         if(user == null){
             Intent i = new Intent(MainActivity.this,WelcomeScreenActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -66,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         initUI();
         initRecycler();
     }
-
+//  inflate recycler view
     private void initRecycler() {
         newsFeed = findViewById(R.id.newsFeedRecycler);
         newsFeedAdapter = new RecyclerAdapter(MainActivity.this);
@@ -74,17 +78,26 @@ public class MainActivity extends AppCompatActivity {
 
         mRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(DataSnapshot posts) {
                 //todo read data here from database
+
+                    for (DataSnapshot post : posts.getChildren() ){ //get all post instances from database
+                        retrievedPosts.add(post.getValue(Post.class)); //add posts to list object
+                    }
+                    newsFeedAdapter.clearItems();
+                    newsFeedAdapter.addItems(retrievedPosts); //add list object to adapter
+                    newsFeed.setAdapter(newsFeedAdapter);
+                    makeOP("FireDB","Added items from database");
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                    makeToast("Failed to load data.\nPlease check your network connection :(");
             }
         });
     }
-
+//  inflate UI components
     private void initUI() {
         dialog = new Dialog(MainActivity.this);
         dialog.setContentView(R.layout.add_post_dialog);
@@ -116,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             new NetworkRequest(MainActivity.this, new AsyncTaskCompleteListener() {
                 @Override
                 //async listener for callback from async task
-                public void onTaskComplete(ArticleDataModel result,final ProgressDialog pd,int responseCode) {
+                public void onTaskComplete(Post result, final ProgressDialog pd, int responseCode) {
                     //todo stuff here for adding web page data to database
                     if (responseCode == 404){ //bad url
                         makeToast("There was a problem with the url you supplied.");
@@ -144,13 +157,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+//    inflate action bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.add_post,menu);
         return true;
     }
-
+//    listen for action bar clicks
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
@@ -162,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+//    jhol for leaving the application
     boolean doubleBackPressedToExit = false;
     @Override
     public void onBackPressed() {
@@ -177,16 +192,16 @@ public class MainActivity extends AppCompatActivity {
         }, 2000);
 
     }
-
+//  dummy func for toasts
     void makeToast(String s){
         Toast.makeText(MainActivity.this,""+s,Toast.LENGTH_SHORT).show();
     }
-
+//  dummy func for logs
     static void makeOP(String tag,String s){
         Log.i(tag,s);
     }
-
-    private static class NetworkRequest extends AsyncTask<String,Void,ArticleDataModel>{
+// async task for network requests
+    private static class NetworkRequest extends AsyncTask<String,Void,Post>{
         public AsyncTaskCompleteListener asyncTaskCompleteListener;
         private ProgressDialog pd;
         public NetworkRequest(Context c,AsyncTaskCompleteListener cb){
@@ -202,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected ArticleDataModel doInBackground(String... strings) {
+        protected Post doInBackground(String... strings) {
             String url = strings[0];
             makeOP("OG URL NIGG",url);
             try{
@@ -217,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 makeOP("Host",parentWebsite.attr("content"));
 
 
-                return new ArticleDataModel(headline.attr("content"),desc.attr("content"),
+                return new Post(headline.attr("content"),desc.attr("content"),
                         imageUrl.attr("content"),parentWebsite.attr("content"), url);
 
             }
@@ -229,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(ArticleDataModel s) {
+        protected void onPostExecute(Post s) {
 //            super.onPostExecute(s);
             if (s == null){
                 asyncTaskCompleteListener.onTaskComplete(s,pd,404);
