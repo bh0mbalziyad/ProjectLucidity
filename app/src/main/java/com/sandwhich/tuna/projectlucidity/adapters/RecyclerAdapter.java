@@ -1,6 +1,7 @@
 package com.sandwhich.tuna.projectlucidity.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 
@@ -46,11 +50,33 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
     }
 
     @Override
-    public void onBindViewHolder(RecyclerHolder holder, int position) {
+    public void onBindViewHolder(final RecyclerHolder holder, int position) {
         //todo assign data to recyler view items from itemModels collection object
         holder.parentWebsite.setText(itemModels.get(position).getHost());
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
         holder.timeStamp.setText("8h");
+        ImageLoader imageLoader = ImageLoader.getInstance();
+        imageLoader.loadImage(itemModels.get(position).getImageUrl(), new ImageLoadingListener() {
+            @Override
+            public void onLoadingStarted(String imageUri, View view) {
+
+            }
+
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                failReason.getCause().printStackTrace();
+            }
+
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                holder.headerImage.setImageBitmap(loadedImage);
+            }
+
+            @Override
+            public void onLoadingCancelled(String imageUri, View view) {
+
+            }
+        });
 
     }
 
