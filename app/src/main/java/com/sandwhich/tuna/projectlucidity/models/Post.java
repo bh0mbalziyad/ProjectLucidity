@@ -1,9 +1,19 @@
 package com.sandwhich.tuna.projectlucidity.models;
 
+import android.support.annotation.NonNull;
+
 import com.google.firebase.database.Exclude;
 
-public class Post {
-    String headline,description,imageUrl,host,postUrl;
+import java.util.Date;
+
+public class Post implements Comparable<Post>{
+    String headline;
+    String description;
+    String imageUrl;
+    String host;
+    String postUrl;
+    Date postDate; //todo add time function
+
     @Exclude public String urlForFirebasePath;
 
     @Exclude public String getUrlForFirebasePath() {
@@ -28,13 +38,13 @@ public class Post {
         this.imageUrl = imageUrl;
         this.host = host;
         this.postUrl = postUrl;
-        this.urlForFirebasePath = postUrl;
-//                .replace(".","-")
-//                .replace("$","-")
-//                .replace("[","-")
-//                .replace("]","-")
-//                .replace("#","-")
-//                .replace("/","-");
+        this.urlForFirebasePath = postUrl
+                .replace(".","-")
+                .replace("$","-")
+                .replace("[","-")
+                .replace("]","-")
+                .replace("#","-")
+                .replace("/","-");
 
     }
 
@@ -68,5 +78,10 @@ public class Post {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    @Override
+    public int compareTo(@NonNull Post post) {
+        return 0;
     }
 }

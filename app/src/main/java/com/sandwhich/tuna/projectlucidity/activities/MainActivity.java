@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot posts) {
                 //todo read data here from database
-
+                    retrievedPosts.clear();
                     for (DataSnapshot post : posts.getChildren() ){ //get all post instances from database
                         retrievedPosts.add(post.getValue(Post.class)); //add posts to list object
                     }

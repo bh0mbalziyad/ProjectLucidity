@@ -35,11 +35,10 @@
                 android:text="Timestamp"
                 android:textColor="#f45d22" />
         </LinearLayout>
-        <android.support.v7.widget.AppCompatImageView
+        <ImageView
             android:layout_below="@id/content_overview"
             android:layout_centerHorizontal="true"
             android:layout_margin="8dp"
-            android:padding="4dp"
             android:id="@+id/article_header_image"
             android:layout_width="match_parent"
             android:layout_height="150dp" />

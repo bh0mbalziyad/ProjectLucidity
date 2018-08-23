@@ -8,9 +8,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
@@ -23,6 +25,7 @@ import java.util.List;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.RecyclerHolder> {
     public final List<Post> itemModels = new ArrayList<>();
     public static Context context;
+    ImageLoader imageLoader = ImageLoader.getInstance();
 
     public RecyclerAdapter(Context c){
         context = c;
@@ -45,6 +48,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
 
     @Override
     public RecyclerHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        imageLoader.init(ImageLoaderConfiguration.createDefault(context));
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list,parent,false);
         return new RecyclerHolder(v);
     }
@@ -55,7 +59,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
         holder.parentWebsite.setText(itemModels.get(position).getHost());
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
         holder.timeStamp.setText("8h");
-        ImageLoader imageLoader = ImageLoader.getInstance();
         imageLoader.loadImage(itemModels.get(position).getImageUrl(), new ImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {
@@ -87,7 +90,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
 
     class RecyclerHolder extends RecyclerView.ViewHolder{
         TextView parentWebsite,timeStamp,articleHeadline;
-        AppCompatImageView headerImage;
+        ImageView headerImage;
         public RecyclerHolder(View itemView) {
             super(itemView);
             parentWebsite = itemView.findViewById(R.id.parent_website);
