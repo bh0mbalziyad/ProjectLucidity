@@ -3,7 +3,6 @@ package com.sandwhich.tuna.projectlucidity.adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,10 +54,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
 
     @Override
     public void onBindViewHolder(final RecyclerHolder holder, int position) {
-        //todo assign data to recyler view items from itemModels collection object
+        //todo assign data to recycler view items from itemModels collection object
         holder.parentWebsite.setText(itemModels.get(position).getHost());
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
-        holder.timeStamp.setText("8h");
+        holder.timeStamp.setText(itemModels.get(position).getPostDate().getDate());
         imageLoader.loadImage(itemModels.get(position).getImageUrl(), new ImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {

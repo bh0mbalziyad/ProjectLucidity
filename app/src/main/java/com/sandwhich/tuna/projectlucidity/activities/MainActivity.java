@@ -40,7 +40,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.HttpUrl;
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView newsFeed;
     RecyclerAdapter newsFeedAdapter;
     List<Post> retrievedPosts;
+//    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
     //todo add item-touch-helper to adapter to listen for click events
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -120,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //function which adds post to firebase database
+    //function which adds post to Firebase database
     private void makePost() {
         String url = postURL.getText().toString();
         HttpUrl resolvedUrl = HttpUrl.parse(url);
@@ -230,10 +233,11 @@ public class MainActivity extends AppCompatActivity {
                 makeOP("Image url",imageUrl.attr("content"));
                 Element parentWebsite = doc.selectFirst("meta[property=og:site_name]");
                 makeOP("Host",parentWebsite.attr("content"));
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 
 
                 return new Post(headline.attr("content"),desc.attr("content"),
-                        imageUrl.attr("content"),parentWebsite.attr("content"), url);
+                        imageUrl.attr("content"),parentWebsite.attr("content"), url,sdf.format(new Date()) );
 
             }
             catch (IOException | NullPointerException ex){

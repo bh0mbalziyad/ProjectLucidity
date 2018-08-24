@@ -1,18 +1,22 @@
 package com.sandwhich.tuna.projectlucidity.models;
-
-import android.support.annotation.NonNull;
-
+import android.util.Log;
 import com.google.firebase.database.Exclude;
 
-import java.util.Date;
-
-public class Post implements Comparable<Post>{
+public class Post{
     String headline;
     String description;
     String imageUrl;
     String host;
     String postUrl;
-    Date postDate; //todo add time function
+    DateTimeModel postDate; //todo add time function
+
+    public DateTimeModel getPostDate() {
+        return postDate;
+    }
+
+    public void setPostDate(DateTimeModel postDate) {
+        this.postDate = postDate;
+    }
 
     @Exclude public String urlForFirebasePath;
 
@@ -32,7 +36,7 @@ public class Post implements Comparable<Post>{
         //empty default constructor for firebase
     }
 
-    public Post(String headline, String description, String imageUrl, String host, String postUrl) {
+    public Post(String headline, String description, String imageUrl, String host, String postUrl,String date) {
         this.headline = headline;
         this.description = description;
         this.imageUrl = imageUrl;
@@ -45,6 +49,17 @@ public class Post implements Comparable<Post>{
                 .replace("]","-")
                 .replace("#","-")
                 .replace("/","-");
+        this.postDate = new DateTimeModel();
+        try{
+
+            this.postDate.setDate(date.split("_")[0]);
+            this.postDate.setTime(date.split("_")[1]);
+            Log.i("Assigning date","1");
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+            Log.e("Error assigning date","1");
+        }
 
     }
 
@@ -78,10 +93,5 @@ public class Post implements Comparable<Post>{
 
     public void setHost(String host) {
         this.host = host;
-    }
-
-    @Override
-    public int compareTo(@NonNull Post post) {
-        return 0;
     }
 }
