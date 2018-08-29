@@ -1,6 +1,7 @@
 package com.sandwhich.tuna.projectlucidity.adapters;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +16,7 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
+import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 
 import java.util.ArrayList;
@@ -24,10 +26,13 @@ import java.util.List;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.RecyclerHolder> {
     public final List<Post> itemModels = new ArrayList<>();
     public static Context context;
-    ImageLoader imageLoader = ImageLoader.getInstance();
+    private ImageLoader imageLoader = ImageLoader.getInstance();
+    private ItemClickListener mListener;
+    public RecyclerAdapter(Context c,ItemClickListener mListener){
 
-    public RecyclerAdapter(Context c){
         context = c;
+        this.mListener = mListener;
+
     }
 
     public void addItems(@NonNull Collection<Post> models){
@@ -49,15 +54,17 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
     public RecyclerHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         imageLoader.init(ImageLoaderConfiguration.createDefault(context));
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list,parent,false);
-        return new RecyclerHolder(v);
+        return new RecyclerHolder(v,this.mListener);
     }
 
     @Override
     public void onBindViewHolder(final RecyclerHolder holder, int position) {
         //todo assign data to recycler view items from itemModels collection object
+
         holder.parentWebsite.setText(itemModels.get(position).getHost());
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
         holder.timeStamp.setText(itemModels.get(position).getPostDate().getDate());
+        holder.postLikeCount.setText(""+itemModels.get(position).getPostLikeCount());
         imageLoader.loadImage(itemModels.get(position).getImageUrl(), new ImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {
@@ -87,15 +94,28 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
         return itemModels.size();
     }
 
-    class RecyclerHolder extends RecyclerView.ViewHolder{
-        TextView parentWebsite,timeStamp,articleHeadline;
-        ImageView headerImage;
-        public RecyclerHolder(View itemView) {
+    class RecyclerHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+        ItemClickListener listener;
+        TextView parentWebsite,timeStamp,articleHeadline,postLikeCount;
+        ImageView headerImage,postLike,postDislike;
+        public RecyclerHolder(View itemView,ItemClickListener mListener) {
             super(itemView);
+            this.listener = mListener;
+            postLikeCount = itemView.findViewById(R.id.likeCounter);
+            postDislike = itemView.findViewById(R.id.postDislike);
+            postLike = itemView.findViewById(R.id.postLike);
+            postLike.setOnClickListener(this);
+            postDislike.setOnClickListener(this);
             parentWebsite = itemView.findViewById(R.id.parent_website);
             timeStamp= itemView.findViewById(R.id.timestamp);
             articleHeadline= itemView.findViewById(R.id.article_header_content);
             headerImage= itemView.findViewById(R.id.article_header_image);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            listener.onClick(view, getAdapterPosition());
         }
     }
 }

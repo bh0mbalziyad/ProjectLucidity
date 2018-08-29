@@ -1,14 +1,55 @@
 package com.sandwhich.tuna.projectlucidity.models;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import com.google.firebase.database.Exclude;
 
-public class Post{
-    String headline;
-    String description;
-    String imageUrl;
-    String host;
-    String postUrl;
-    DateTimeModel postDate; //todo add time function
+import java.util.HashMap;
+
+@SuppressWarnings("unused")
+
+public class Post implements Parcelable{
+
+    private String headline;
+    private String description;
+    private String imageUrl;
+    private String host;
+    private String postUrl;
+    private DateTimeModel postDate; //todo add time function
+    private int postLikeCount;
+    private HashMap<String,String> likedPosts;
+
+    protected Post(Parcel in) {
+        headline = in.readString();
+        description = in.readString();
+        imageUrl = in.readString();
+        host = in.readString();
+        postUrl = in.readString();
+        postDate = in.readParcelable(DateTimeModel.class.getClassLoader());
+        postLikeCount = in.readInt();
+        urlForFirebasePath = in.readString();
+    }
+
+    public static final Creator<Post> CREATOR = new Creator<Post>() {
+        @Override
+        public Post createFromParcel(Parcel in) {
+            return new Post(in);
+        }
+
+        @Override
+        public Post[] newArray(int size) {
+            return new Post[size];
+        }
+    };
+
+    public HashMap<String, String> getLikedPosts() {
+        return likedPosts;
+    }
+
+    public void setLikedPosts(HashMap<String, String> likedPosts) {
+        this.likedPosts = likedPosts;
+    }
+
 
     public DateTimeModel getPostDate() {
         return postDate;
@@ -42,6 +83,8 @@ public class Post{
         this.imageUrl = imageUrl;
         this.host = host;
         this.postUrl = postUrl;
+        this.likedPosts = new HashMap<>();
+        this.postLikeCount = 0;
         this.urlForFirebasePath = postUrl
                 .replace(".","-")
                 .replace("$","-")
@@ -93,5 +136,30 @@ public class Post{
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public int getPostLikeCount() {
+        return postLikeCount;
+    }
+
+    public void setPostLikeCount(int postLikeCount) {
+        this.postLikeCount = postLikeCount;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(headline);
+        parcel.writeString(description);
+        parcel.writeString(imageUrl);
+        parcel.writeString(host);
+        parcel.writeString(postUrl);
+        parcel.writeParcelable(postDate, i);
+        parcel.writeInt(postLikeCount);
+        parcel.writeString(urlForFirebasePath);
     }
 }

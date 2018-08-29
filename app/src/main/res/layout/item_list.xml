@@ -53,6 +53,36 @@
             android:id="@+id/article_header_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        <LinearLayout
+            android:layout_margin="8dp"
+            android:padding="4dp"
+            android:layout_below="@id/article_header_content"
+            android:orientation="horizontal"
+            android:id="@+id/likeCountContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:src="@drawable/post_like"
+                android:id="@+id/postLike"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+            <TextView
+                android:id="@+id/likeCounter"
+                android:gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:padding="2dp"
+                android:text="399"
+                android:textColor="#004fed"
+                android:textSize="17sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <ImageView
+                android:src="@drawable/post_dislike"
+                android:id="@+id/postDislike"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+
+        </LinearLayout>
 
     </RelativeLayout>
     

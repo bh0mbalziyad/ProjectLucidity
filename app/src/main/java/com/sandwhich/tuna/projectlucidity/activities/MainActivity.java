@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -32,7 +33,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
+import com.sandwhich.tuna.projectlucidity.adapters.RecyclerItemClickListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
+import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 
 import org.jsoup.Jsoup;
@@ -48,13 +51,14 @@ import java.util.List;
 import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity {
-    DatabaseReference mRef;
+    DatabaseReference postRef;
     Dialog dialog;
     Button submitPost;
     TextInputEditText postURL;
     RecyclerView newsFeed;
     RecyclerAdapter newsFeedAdapter;
     List<Post> retrievedPosts;
+    Intent startViewPost;
 //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
     //todo add item-touch-helper to adapter to listen for click events
     @Override
@@ -62,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        mRef = FirebaseDatabase.getInstance().getReference("posts");
+        postRef = FirebaseDatabase.getInstance().getReference("posts");
         retrievedPosts = new ArrayList<>();
         if(user == null){
             Intent i = new Intent(MainActivity.this,WelcomeScreenActivity.class);
@@ -70,16 +74,42 @@ public class MainActivity extends AppCompatActivity {
             startActivity(i);
 
         }
+        startViewPost = new Intent(MainActivity.this,ViewPostActivity.class);
         initUI();
         initRecycler();
     }
+
+
 //  inflate recycler view
     private void initRecycler() {
         newsFeed = findViewById(R.id.newsFeedRecycler);
-        newsFeedAdapter = new RecyclerAdapter(MainActivity.this);
+        newsFeedAdapter = new RecyclerAdapter(MainActivity.this, new ItemClickListener() {
+            @Override
+            public void onClick(View v, int position) {
+                final DatabaseReference likeRef;
+                Post post = retrievedPosts.get(position);
+                switch (v.getId()){
+                    case R.id.postLike:
+                        Log.i("Clicked","Like at pos:"+position);
+                        break;
+                    case R.id.postDislike:
+                        Log.i("Clicked","Dislike at pos:"+position);
+                        break;
+                    default:
+                            Log.i("Clicked","Default clicked at pos:"+position);
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable("post-obj",post);
+                            startViewPost.putExtras(bundle);
+                            startActivity(startViewPost);
+                            break;
+
+                }
+            }
+        });
+        newsFeed.setAdapter(newsFeedAdapter);
         newsFeed.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
 
-        mRef.addValueEventListener(new ValueEventListener() {
+        postRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot posts) {
                 //todo read data here from database
@@ -140,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                         dialog.dismiss();
                     }
                     else if (responseCode == 300){ //amazing url
-                        mRef.child(result.urlForFirebasePath).setValue(result).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        postRef.child(result.urlForFirebasePath).setValue(result).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
