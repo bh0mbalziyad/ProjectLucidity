@@ -59,7 +59,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
 
     @Override
     public void onBindViewHolder(final RecyclerHolder holder, int position) {
-        //todo assign data to recycler view items from itemModels collection object
 
         holder.parentWebsite.setText(itemModels.get(position).getHost());
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());

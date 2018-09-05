@@ -33,10 +33,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
-import com.sandwhich.tuna.projectlucidity.adapters.RecyclerItemClickListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
 import com.sandwhich.tuna.projectlucidity.models.Post;
+import com.sandwhich.tuna.projectlucidity.models.User;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -46,11 +46,15 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity {
+    User currentUser;
+    FirebaseUser user;
     DatabaseReference postRef;
     Dialog dialog;
     Button submitPost;
@@ -60,12 +64,12 @@ public class MainActivity extends AppCompatActivity {
     List<Post> retrievedPosts;
     Intent startViewPost;
 //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-    //todo add item-touch-helper to adapter to listen for click events
+    //todo add transactions for post like and dislike
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
         postRef = FirebaseDatabase.getInstance().getReference("posts");
         retrievedPosts = new ArrayList<>();
         if(user == null){
@@ -82,33 +86,69 @@ public class MainActivity extends AppCompatActivity {
 
 //  inflate recycler view
     private void initRecycler() {
+        FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                currentUser = dataSnapshot.getValue(User.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         newsFeed = findViewById(R.id.newsFeedRecycler);
         newsFeedAdapter = new RecyclerAdapter(MainActivity.this, new ItemClickListener() {
             @Override
-            public void onClick(View v, int position) {
+            public void onClick(final View v, final int position) {
                 final DatabaseReference likeRef;
-                Post post = retrievedPosts.get(position);
+                final DatabaseReference userRef;
+                final Post post = retrievedPosts.get(position);
+                String postUrl = post.getUrlForFirebasePath(post.getPostUrl());
+                Log.i("Firebase key:- ",postUrl);
+                likeRef = FirebaseDatabase.getInstance().getReference("posts").child(postUrl);
+                userRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
+                Map<String,Object> tasks = new HashMap<String,Object>();
                 switch (v.getId()){
                     case R.id.postLike:
                         Log.i("Clicked","Like at pos:"+position);
+                        tasks.put("postLikeCount",post.getPostLikeCount()+1);
+                        likeRef.updateChildren(tasks);
+                        likeRef.child("usersWhoLiked").child(currentUser.getUid()).setValue(true);
+                        userRef.child("likedPosts").child(postUrl).setValue(true);
                         break;
                     case R.id.postDislike:
                         Log.i("Clicked","Dislike at pos:"+position);
+                        tasks.put("postLikeCount",post.getPostLikeCount()-1);
+                        likeRef.updateChildren(tasks);
+                        likeRef.child("usersWhoLiked").child(currentUser.getUid()).removeValue();
+                        userRef.child("likedPosts").child(postUrl).removeValue();
                         break;
                     default:
-                            Log.i("Clicked","Default clicked at pos:"+position);
-                            Bundle bundle = new Bundle();
-                            bundle.putParcelable("post-obj",post);
-                            startViewPost.putExtras(bundle);
-                            startActivity(startViewPost);
-                            break;
+                        Log.i("Clicked","Default clicked at pos:"+position);
+                        Bundle bundle = new Bundle();
+                        bundle.putParcelable("post-obj",post);
+                        startViewPost.putExtras(bundle);
+                        startActivity(startViewPost);
+                        break;
 
                 }
+
             }
         });
         newsFeed.setAdapter(newsFeedAdapter);
         newsFeed.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                currentUser = dataSnapshot.getValue(User.class);
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                makeToast("An error occurred while retrieving user data");
+            }
+        });
         postRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot posts) {

@@ -4,9 +4,7 @@ import android.os.Parcelable;
 import android.util.Log;
 import com.google.firebase.database.Exclude;
 
-import java.util.HashMap;
-
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 
 public class Post implements Parcelable{
 
@@ -16,8 +14,8 @@ public class Post implements Parcelable{
     private String host;
     private String postUrl;
     private DateTimeModel postDate; //todo add time function
-    private int postLikeCount;
-    private HashMap<String,String> likedPosts;
+    private long postLikeCount;
+//    private HashMap<String,String> likedPosts;
 
     protected Post(Parcel in) {
         headline = in.readString();
@@ -42,14 +40,6 @@ public class Post implements Parcelable{
         }
     };
 
-    public HashMap<String, String> getLikedPosts() {
-        return likedPosts;
-    }
-
-    public void setLikedPosts(HashMap<String, String> likedPosts) {
-        this.likedPosts = likedPosts;
-    }
-
 
     public DateTimeModel getPostDate() {
         return postDate;
@@ -65,6 +55,15 @@ public class Post implements Parcelable{
         return urlForFirebasePath;
     }
 
+    public String getUrlForFirebasePath(String postUrl){
+        return postUrl
+                .replace(".","-")
+                .replace("$","-")
+                .replace("[","-")
+                .replace("]","-")
+                .replace("#","-")
+                .replace("/","-");
+    }
     public String getPostUrl() {
         return postUrl;
     }
@@ -83,7 +82,6 @@ public class Post implements Parcelable{
         this.imageUrl = imageUrl;
         this.host = host;
         this.postUrl = postUrl;
-        this.likedPosts = new HashMap<>();
         this.postLikeCount = 0;
         this.urlForFirebasePath = postUrl
                 .replace(".","-")
@@ -138,11 +136,11 @@ public class Post implements Parcelable{
         this.host = host;
     }
 
-    public int getPostLikeCount() {
+    public long getPostLikeCount() {
         return postLikeCount;
     }
 
-    public void setPostLikeCount(int postLikeCount) {
+    public void setPostLikeCount(long postLikeCount) {
         this.postLikeCount = postLikeCount;
     }
 
@@ -159,7 +157,7 @@ public class Post implements Parcelable{
         parcel.writeString(host);
         parcel.writeString(postUrl);
         parcel.writeParcelable(postDate, i);
-        parcel.writeInt(postLikeCount);
+        parcel.writeLong(postLikeCount);
         parcel.writeString(urlForFirebasePath);
     }
 }
