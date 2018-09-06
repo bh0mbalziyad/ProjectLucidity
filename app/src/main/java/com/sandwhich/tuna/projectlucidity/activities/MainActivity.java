@@ -19,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -45,8 +46,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -113,12 +116,30 @@ public class MainActivity extends AppCompatActivity {
                         likePost(databaseReference, post, u1, Post.getUrlForFirebasePath(post.getPostUrl()), new LikeDislikeComplete() {
                             @Override
                             public void onTaskComplete(Task<Void> task, PostResult p) {
+                                ImageView img1,img2;
                                 switch (p){
                                     case LIKED:
+//                                        img1 = v.findViewById(R.id.postLike);
+//                                        img1.setImageDrawable(getDrawable(R.drawable.post_liked));
+//                                        img2 = v.findViewById(R.id.postDislike);
+//                                        img2.setImageDrawable(getDrawable(R.drawable.post_dislike));
+                                        makeToast("LIKED");
+                                        break;
                                         //change icon to liked
                                     case DISLIKED:
+//                                        img1 = v.findViewById(R.id.postDislike);
+//                                        img1.setImageDrawable(getDrawable(R.drawable.post_disliked));
+//                                        img2 = v.findViewById(R.id.postLike);
+//                                        img2.setImageDrawable(getDrawable(R.drawable.post_like));
+                                        makeToast("DISLIKED");
+                                        break;
                                         //change icon to disliked
                                     case NEUTRAl:
+//                                        img1 = v.findViewById(R.id.postLike);
+//                                        img1.setImageDrawable(getDrawable(R.drawable.post_like));
+//                                        img2 = v.findViewById(R.id.postDislike);
+//                                        img2.setImageDrawable(getDrawable(R.drawable.post_dislike));
+                                        makeToast("Neutralized");
                                         //change icon to neutral
                                 }
                             }
@@ -166,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
                 makeToast("An error occurred while retrieving user data");
             }
         });
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         postRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot posts) {
@@ -174,6 +196,33 @@ public class MainActivity extends AppCompatActivity {
                     for (DataSnapshot post : posts.getChildren() ){ //get all post instances from database
                         retrievedPosts.add(post.getValue(Post.class)); //add posts to list object
                     }
+                    retrievedPosts.sort(new Comparator<Post>() {
+                        @Override
+                        public int compare(Post o1, Post o2) {
+                            String dateString1 = o1.getPostDate().getDate()+"_"+o1.getPostDate().getTime();
+                            String date2String2 = o2.getPostDate().getDate()+"_"+o2.getPostDate().getTime();
+                            try{
+                                Date date1 = simpleDateFormat.parse(dateString1);
+                                Date date2 = simpleDateFormat.parse(date2String2);
+                                if (date1.compareTo(date2)>0){
+                                        //date 1 is after date 2 so object 1 is greater
+                                        return -1;
+                                }
+                                else if(date1.compareTo(date2)<0){
+                                        //date 2 is after date 1 so object 2 is greater
+                                        return 1;
+                                }
+                                else{
+                                        //both dates are equal
+                                        return 0;
+                                }
+                            }
+                            catch (ParseException ex){
+                                ex.printStackTrace();
+                            }
+                            return 0;
+                        }
+                    });
                     newsFeedAdapter.clearItems();
                     newsFeedAdapter.addItems(retrievedPosts); //add list object to adapter
                     newsFeed.setAdapter(newsFeedAdapter);
@@ -297,6 +346,7 @@ public class MainActivity extends AppCompatActivity {
     public void likePost(DatabaseReference ref, Post post, UserStatus status, String postUrl, final LikeDislikeComplete ld){
         Map<String,Object> tasks = new HashMap<>();
         switch (status){
+            //post already liked
             case LIKED:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.NEUTRAl);
@@ -308,6 +358,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 break;
+            //post in neutral state
             case NEUTRAL:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.LIKED);
@@ -319,8 +370,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 break;
+            //post already disliked
             case DISLIKED:
-                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+2);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.LIKED);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.LIKED);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -336,8 +388,9 @@ public class MainActivity extends AppCompatActivity {
     public void dislikePost(DatabaseReference ref, Post post, UserStatus status, String postUrl, final LikeDislikeComplete ld){
         Map<String,Object> tasks = new HashMap<>();
         switch (status){
+            //post already liked
             case LIKED:
-                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-2);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.DISLIKED);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.DISLIKED);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -347,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 break;
+            //post in neutral state
             case NEUTRAL:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.DISLIKED);
@@ -358,6 +412,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 break;
+            //post already disliked
             case DISLIKED:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.NEUTRAl);
