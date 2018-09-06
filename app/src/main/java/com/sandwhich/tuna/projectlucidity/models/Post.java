@@ -17,13 +17,13 @@ public class Post implements Parcelable{
     private String host;
     private String postUrl;
     private DateTimeModel postDate; //todo add time function
-    private Map<String,Boolean> usersWhoLiked = new HashMap<>();
+    private Map<String,PostResult> usersWhoLiked = new HashMap<>();
 
-    public Map<String, Boolean> getUsersWhoLiked() {
+    public Map<String, PostResult> getUsersWhoLiked() {
         return usersWhoLiked;
     }
 
-    public void setUsersWhoLiked(Map<String, Boolean> usersWhoLiked) {
+    public void setUsersWhoLiked(Map<String, PostResult> usersWhoLiked) {
         this.usersWhoLiked = usersWhoLiked;
     }
 

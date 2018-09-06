@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -30,8 +29,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
@@ -272,14 +269,21 @@ public class MainActivity extends AppCompatActivity {
 
     public UserStatus getUserStatusOnPost(Post p,User currentUser){
         if (p.getUsersWhoLiked().containsKey(currentUser.getUid())){
-            if (p.getUsersWhoLiked().get(currentUser.getUid())){
-                return UserStatus.LIKED;
-            }
-            else{
-                return UserStatus.DISLIKED;
+            switch (p.getUsersWhoLiked().get(currentUser.getUid())){
+                case LIKED:
+                    return UserStatus.LIKED;
+//                    break;
+                case NEUTRAl:
+                    return UserStatus.NEUTRAL;
+//                    break;
+                case DISLIKED:
+                    return UserStatus.DISLIKED;
+//                    break;
+                default:
+                    return UserStatus.NEUTRAL;
             }
         }
-        else{
+        else {
             return UserStatus.NEUTRAL;
         }
 
@@ -295,8 +299,8 @@ public class MainActivity extends AppCompatActivity {
         switch (status){
             case LIKED:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
-                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,null);
-                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),null);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.NEUTRAl);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.NEUTRAl);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -306,8 +310,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case NEUTRAL:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
-                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,true);
-                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),true);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.LIKED);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.LIKED);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -317,8 +321,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case DISLIKED:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
-                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,true);
-                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),true);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.LIKED);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.LIKED);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -334,8 +338,8 @@ public class MainActivity extends AppCompatActivity {
         switch (status){
             case LIKED:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
-                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,false);
-                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),false);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.DISLIKED);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.DISLIKED);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -345,8 +349,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case NEUTRAL:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
-                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,false);
-                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),false);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.DISLIKED);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.DISLIKED);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -356,8 +360,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case DISLIKED:
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
-                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,null);
-                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),null);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.NEUTRAl);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.NEUTRAl);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
