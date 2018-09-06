@@ -4,6 +4,9 @@ import android.os.Parcelable;
 import android.util.Log;
 import com.google.firebase.database.Exclude;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressWarnings({"unused", "WeakerAccess"})
 
 public class Post implements Parcelable{
@@ -14,6 +17,16 @@ public class Post implements Parcelable{
     private String host;
     private String postUrl;
     private DateTimeModel postDate; //todo add time function
+    private Map<String,Boolean> usersWhoLiked = new HashMap<>();
+
+    public Map<String, Boolean> getUsersWhoLiked() {
+        return usersWhoLiked;
+    }
+
+    public void setUsersWhoLiked(Map<String, Boolean> usersWhoLiked) {
+        this.usersWhoLiked = usersWhoLiked;
+    }
+
     private long postLikeCount;
 //    private HashMap<String,String> likedPosts;
 
@@ -55,7 +68,7 @@ public class Post implements Parcelable{
         return urlForFirebasePath;
     }
 
-    public String getUrlForFirebasePath(String postUrl){
+    public static String getUrlForFirebasePath(String postUrl){
         return postUrl
                 .replace(".","-")
                 .replace("$","-")

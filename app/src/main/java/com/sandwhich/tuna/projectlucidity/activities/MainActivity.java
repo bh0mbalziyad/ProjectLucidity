@@ -30,13 +30,18 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
 import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
+import com.sandwhich.tuna.projectlucidity.interfaces.LikeDislikeComplete;
 import com.sandwhich.tuna.projectlucidity.models.Post;
+import com.sandwhich.tuna.projectlucidity.models.PostResult;
 import com.sandwhich.tuna.projectlucidity.models.User;
+import com.sandwhich.tuna.projectlucidity.models.UserStatus;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -101,28 +106,43 @@ public class MainActivity extends AppCompatActivity {
         newsFeedAdapter = new RecyclerAdapter(MainActivity.this, new ItemClickListener() {
             @Override
             public void onClick(final View v, final int position) {
-                final DatabaseReference likeRef;
-                final DatabaseReference userRef;
+                final DatabaseReference databaseReference;
                 final Post post = retrievedPosts.get(position);
-                String postUrl = post.getUrlForFirebasePath(post.getPostUrl());
-                Log.i("Firebase key:- ",postUrl);
-                likeRef = FirebaseDatabase.getInstance().getReference("posts").child(postUrl);
-                userRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
-                Map<String,Object> tasks = new HashMap<String,Object>();
+                databaseReference = FirebaseDatabase.getInstance().getReference();
                 switch (v.getId()){
                     case R.id.postLike:
                         Log.i("Clicked","Like at pos:"+position);
-                        tasks.put("postLikeCount",post.getPostLikeCount()+1);
-                        likeRef.updateChildren(tasks);
-                        likeRef.child("usersWhoLiked").child(currentUser.getUid()).setValue(true);
-                        userRef.child("likedPosts").child(postUrl).setValue(true);
+                        UserStatus u1 = getUserStatusOnPost(post,currentUser);
+                        likePost(databaseReference, post, u1, Post.getUrlForFirebasePath(post.getPostUrl()), new LikeDislikeComplete() {
+                            @Override
+                            public void onTaskComplete(Task<Void> task, PostResult p) {
+                                switch (p){
+                                    case LIKED:
+                                        //change icon to liked
+                                    case DISLIKED:
+                                        //change icon to disliked
+                                    case NEUTRAl:
+                                        //change icon to neutral
+                                }
+                            }
+                        });
                         break;
                     case R.id.postDislike:
                         Log.i("Clicked","Dislike at pos:"+position);
-                        tasks.put("postLikeCount",post.getPostLikeCount()-1);
-                        likeRef.updateChildren(tasks);
-                        likeRef.child("usersWhoLiked").child(currentUser.getUid()).removeValue();
-                        userRef.child("likedPosts").child(postUrl).removeValue();
+                        UserStatus u2 = getUserStatusOnPost(post,currentUser);
+                        dislikePost(databaseReference, post, u2, Post.getUrlForFirebasePath(post.getPostUrl()), new LikeDislikeComplete() {
+                            @Override
+                            public void onTaskComplete(Task<Void> task, PostResult p) {
+                                switch (p){
+                                    case LIKED:
+                                        //change icon to liked
+                                    case DISLIKED:
+                                        //change icon to disliked
+                                    case NEUTRAl:
+                                        //change icon to neutral
+                                }
+                            }
+                        });
                         break;
                     default:
                         Log.i("Clicked","Default clicked at pos:"+position);
@@ -249,7 +269,112 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-//    jhol for leaving the application
+
+    public UserStatus getUserStatusOnPost(Post p,User currentUser){
+        if (p.getUsersWhoLiked().containsKey(currentUser.getUid())){
+            if (p.getUsersWhoLiked().get(currentUser.getUid())){
+                return UserStatus.LIKED;
+            }
+            else{
+                return UserStatus.DISLIKED;
+            }
+        }
+        else{
+            return UserStatus.NEUTRAL;
+        }
+
+    }
+
+
+
+
+
+//    function to like a given post
+    public void likePost(DatabaseReference ref, Post post, UserStatus status, String postUrl, final LikeDislikeComplete ld){
+        Map<String,Object> tasks = new HashMap<>();
+        switch (status){
+            case LIKED:
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,null);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),null);
+                ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ld.onTaskComplete(task, PostResult.NEUTRAl);
+                    }
+                });
+                break;
+            case NEUTRAL:
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,true);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),true);
+                ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ld.onTaskComplete(task,PostResult.LIKED);
+                    }
+                });
+                break;
+            case DISLIKED:
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,true);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),true);
+                ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ld.onTaskComplete(task,PostResult.LIKED);
+                    }
+                });
+                break;
+        }
+    }
+    //    function to dislike a given post
+    public void dislikePost(DatabaseReference ref, Post post, UserStatus status, String postUrl, final LikeDislikeComplete ld){
+        Map<String,Object> tasks = new HashMap<>();
+        switch (status){
+            case LIKED:
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,false);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),false);
+                ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ld.onTaskComplete(task,PostResult.DISLIKED);
+                    }
+                });
+                break;
+            case NEUTRAL:
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,false);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),false);
+                ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ld.onTaskComplete(task,PostResult.DISLIKED);
+                    }
+                });
+                break;
+            case DISLIKED:
+                tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
+                tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,null);
+                tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),null);
+                ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ld.onTaskComplete(task,PostResult.NEUTRAl);
+                    }
+                });
+                break;
+        }
+    }
+
+
+
+
+
+
+
+
     boolean doubleBackPressedToExit = false;
     @Override
     public void onBackPressed() {
