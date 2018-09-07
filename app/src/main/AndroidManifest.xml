@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sandwhich.tuna.projectlucidity">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -8,8 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
-        <activity android:name=".activities.MainActivity"
-            android:label="Lucidity"/>
+        <activity android:name=".activities.MainActivity" android:label="Lucidity"/>
         <activity android:name=".activities.WelcomeScreenActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />

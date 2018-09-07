@@ -34,32 +34,7 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
         final FirebaseUser user= FirebaseAuth.getInstance().getCurrentUser();
         //todo optimize this please.
         if (user!=null){
-            final DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-            ref.child("users").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (!dataSnapshot.exists()){
-                        Map<String,Object> tasks = new HashMap<>();
-                        tasks.put(user.getUid(),new User(user.getEmail(),user.getUid()));
-                        ref.child("users").updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                Log.i("UserAdd","added firebase user +"+user.getEmail());
-                                startActivity(new Intent(WelcomeScreenActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
-                            }
-                        });
-                    }
-                    else{
-                        startActivity(new Intent(WelcomeScreenActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-//            startActivity(new Intent(WelcomeScreenActivity.this,MainActivity.class));
+            startActivity(new Intent(WelcomeScreenActivity.this,LoginActivity.class));
         }
         initUI();
     }

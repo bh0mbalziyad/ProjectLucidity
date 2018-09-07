@@ -10,6 +10,21 @@ import java.util.Map;
 @SuppressWarnings({"unused", "WeakerAccess"})
 
 public class Post implements Parcelable{
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null){
+            return false;
+        }
+        else if (getClass() != obj.getClass()) return false;
+        else{
+            Post p = (Post) obj;
+            if (p.getPostUrl().equals(this.getPostUrl())
+                    && p.getPostLikeCount()==this.getPostLikeCount()
+                    && p.getUsersWhoLiked().equals(this.usersWhoLiked)) return true;
+            else return false;
+        }
+
+    }
 
     private String headline;
     private String description;

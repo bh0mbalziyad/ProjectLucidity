@@ -4,9 +4,11 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.NetworkRequest;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -19,7 +21,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -35,7 +36,6 @@ import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
 import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
-import com.sandwhich.tuna.projectlucidity.interfaces.LikeDislikeComplete;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 import com.sandwhich.tuna.projectlucidity.models.PostResult;
 import com.sandwhich.tuna.projectlucidity.models.User;
@@ -59,6 +59,7 @@ import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity {
     User currentUser;
+    Vibrator mVibrator;
     FirebaseUser user;
     DatabaseReference postRef;
     Dialog dialog;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView newsFeed;
     RecyclerAdapter newsFeedAdapter;
     List<Post> retrievedPosts;
+    List<Post> newPosts;
     Intent startViewPost;
 //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
     //todo add transactions for post like and dislike
@@ -75,8 +77,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         user = FirebaseAuth.getInstance().getCurrentUser();
+        currentUser = new User(user.getEmail(),user.getUid());
+        mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         postRef = FirebaseDatabase.getInstance().getReference("posts");
         retrievedPosts = new ArrayList<>();
+        newPosts = new ArrayList<>();
         if(user == null){
             Intent i = new Intent(MainActivity.this,WelcomeScreenActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -91,78 +96,27 @@ public class MainActivity extends AppCompatActivity {
 
 //  inflate recycler view
     private void initRecycler() {
-        FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                currentUser = dataSnapshot.getValue(User.class);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
         newsFeed = findViewById(R.id.newsFeedRecycler);
-        newsFeedAdapter = new RecyclerAdapter(MainActivity.this, new ItemClickListener() {
+        newsFeedAdapter = new RecyclerAdapter(MainActivity.this,currentUser, new ItemClickListener() {
             @Override
-            public void onClick(final View v, final int position) {
+            public void onClick(final View v, final int position,final View completeView) {
                 final DatabaseReference databaseReference;
                 final Post post = retrievedPosts.get(position);
                 databaseReference = FirebaseDatabase.getInstance().getReference();
                 switch (v.getId()){
                     case R.id.postLike:
+                        mVibrator.vibrate(100);
                         Log.i("Clicked","Like at pos:"+position);
                         UserStatus u1 = getUserStatusOnPost(post,currentUser);
-                        likePost(databaseReference, post, u1, Post.getUrlForFirebasePath(post.getPostUrl()), new LikeDislikeComplete() {
-                            @Override
-                            public void onTaskComplete(Task<Void> task, PostResult p) {
-                                ImageView img1,img2;
-                                switch (p){
-                                    case LIKED:
-//                                        img1 = v.findViewById(R.id.postLike);
-//                                        img1.setImageDrawable(getDrawable(R.drawable.post_liked));
-//                                        img2 = v.findViewById(R.id.postDislike);
-//                                        img2.setImageDrawable(getDrawable(R.drawable.post_dislike));
-                                        makeToast("LIKED");
-                                        break;
-                                        //change icon to liked
-                                    case DISLIKED:
-//                                        img1 = v.findViewById(R.id.postDislike);
-//                                        img1.setImageDrawable(getDrawable(R.drawable.post_disliked));
-//                                        img2 = v.findViewById(R.id.postLike);
-//                                        img2.setImageDrawable(getDrawable(R.drawable.post_like));
-                                        makeToast("DISLIKED");
-                                        break;
-                                        //change icon to disliked
-                                    case NEUTRAl:
-//                                        img1 = v.findViewById(R.id.postLike);
-//                                        img1.setImageDrawable(getDrawable(R.drawable.post_like));
-//                                        img2 = v.findViewById(R.id.postDislike);
-//                                        img2.setImageDrawable(getDrawable(R.drawable.post_dislike));
-                                        makeToast("Neutralized");
-                                        //change icon to neutral
-                                }
-                            }
-                        });
+                        likePost(databaseReference, post, u1, Post.getUrlForFirebasePath(post.getPostUrl()));
                         break;
                     case R.id.postDislike:
+                        mVibrator.vibrate(100);
                         Log.i("Clicked","Dislike at pos:"+position);
                         UserStatus u2 = getUserStatusOnPost(post,currentUser);
-                        dislikePost(databaseReference, post, u2, Post.getUrlForFirebasePath(post.getPostUrl()), new LikeDislikeComplete() {
-                            @Override
-                            public void onTaskComplete(Task<Void> task, PostResult p) {
-                                switch (p){
-                                    case LIKED:
-                                        //change icon to liked
-                                    case DISLIKED:
-                                        //change icon to disliked
-                                    case NEUTRAl:
-                                        //change icon to neutral
-                                }
-                            }
-                        });
+                        dislikePost(databaseReference, post, u2, Post.getUrlForFirebasePath(post.getPostUrl()));
                         break;
-                    default:
+                    case R.id.article_header_image:
                         Log.i("Clicked","Default clicked at pos:"+position);
                         Bundle bundle = new Bundle();
                         bundle.putParcelable("post-obj",post);
@@ -180,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 currentUser = dataSnapshot.getValue(User.class);
+                newsFeedAdapter.setCurrentUser(currentUser);
             }
 
             @Override
@@ -192,10 +147,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot posts) {
                 //todo read data here from database
-                    retrievedPosts.clear();
+                    newPosts.clear();
                     for (DataSnapshot post : posts.getChildren() ){ //get all post instances from database
-                        retrievedPosts.add(post.getValue(Post.class)); //add posts to list object
+                        newPosts.add(post.getValue(Post.class)); //add posts to list object
                     }
+//                    newPosts.removeAll(retrievedPosts);
+                    retrievedPosts.clear();
+                    retrievedPosts.addAll(newPosts);
                     retrievedPosts.sort(new Comparator<Post>() {
                         @Override
                         public int compare(Post o1, Post o2) {
@@ -223,9 +181,8 @@ public class MainActivity extends AppCompatActivity {
                             return 0;
                         }
                     });
-                    newsFeedAdapter.clearItems();
                     newsFeedAdapter.addItems(retrievedPosts); //add list object to adapter
-                    newsFeed.setAdapter(newsFeedAdapter);
+//                    newsFeed.setAdapter(newsFeedAdapter);
                     makeOP("FireDB","Added items from database");
 
             }
@@ -343,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //    function to like a given post
-    public void likePost(DatabaseReference ref, Post post, UserStatus status, String postUrl, final LikeDislikeComplete ld){
+    public void likePost(DatabaseReference ref, Post post, UserStatus status, String postUrl){
         Map<String,Object> tasks = new HashMap<>();
         switch (status){
             //post already liked
@@ -354,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        ld.onTaskComplete(task, PostResult.NEUTRAl);
+
                     }
                 });
                 break;
@@ -366,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        ld.onTaskComplete(task,PostResult.LIKED);
+
                     }
                 });
                 break;
@@ -378,14 +335,14 @@ public class MainActivity extends AppCompatActivity {
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        ld.onTaskComplete(task,PostResult.LIKED);
+
                     }
                 });
                 break;
         }
     }
     //    function to dislike a given post
-    public void dislikePost(DatabaseReference ref, Post post, UserStatus status, String postUrl, final LikeDislikeComplete ld){
+    public void dislikePost(DatabaseReference ref, Post post, UserStatus status, String postUrl){
         Map<String,Object> tasks = new HashMap<>();
         switch (status){
             //post already liked
@@ -396,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        ld.onTaskComplete(task,PostResult.DISLIKED);
+
                     }
                 });
                 break;
@@ -408,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        ld.onTaskComplete(task,PostResult.DISLIKED);
+
                     }
                 });
                 break;
@@ -420,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        ld.onTaskComplete(task,PostResult.NEUTRAl);
+
                     }
                 });
                 break;

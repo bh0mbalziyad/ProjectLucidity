@@ -18,6 +18,7 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
 import com.sandwhich.tuna.projectlucidity.models.Post;
+import com.sandwhich.tuna.projectlucidity.models.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,29 +26,30 @@ import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.RecyclerHolder> {
     public final List<Post> itemModels = new ArrayList<>();
+    User currentUser;
+
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(User currentUser) {
+        this.currentUser = currentUser;
+    }
+
     public static Context context;
     private ImageLoader imageLoader = ImageLoader.getInstance();
     private ItemClickListener mListener;
-    public RecyclerAdapter(Context c,ItemClickListener mListener){
-
+    public RecyclerAdapter(Context c, User currentUser, ItemClickListener mListener){
+        this.currentUser = currentUser;
         context = c;
         this.mListener = mListener;
 
     }
 
-    public void addItems(@NonNull Collection<Post> models){
-        itemModels.addAll(models);
-        notifyItemRangeInserted(itemModels.size()-1,itemModels.size());
-    }
-
-    public int clearItems(){
-        try{
-            itemModels.clear();
-            return 1;
-        }
-        catch (Exception ex){
-            return -1;
-        }
+    public void addItems(@NonNull Collection<Post> newModels){
+        itemModels.clear();
+        itemModels.addAll(newModels);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -59,7 +61,25 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
 
     @Override
     public void onBindViewHolder(final RecyclerHolder holder, int position) {
-
+        if (itemModels.get(position).getUsersWhoLiked().containsKey(currentUser.getUid())){
+            switch (itemModels.get(position).getUsersWhoLiked().get(currentUser.getUid())){
+                case LIKED:
+                    holder.postLike.setImageDrawable(context.getDrawable(R.drawable.post_liked));
+                    holder.postDislike.setImageDrawable(context.getDrawable(R.drawable.post_dislike));
+                    break;
+                case DISLIKED:
+                    holder.postDislike.setImageDrawable(context.getDrawable(R.drawable.post_disliked));
+                    holder.postLike.setImageDrawable(context.getDrawable(R.drawable.post_like));
+                    break;
+                case NEUTRAl:
+                    holder.postDislike.setImageDrawable(context.getDrawable(R.drawable.post_dislike));
+                    holder.postLike.setImageDrawable(context.getDrawable(R.drawable.post_like));
+                    break;
+                default:
+                        holder.postDislike.setImageDrawable(context.getDrawable(R.drawable.post_dislike));
+                        holder.postLike.setImageDrawable(context.getDrawable(R.drawable.post_like));
+            }
+        }
         holder.parentWebsite.setText(itemModels.get(position).getHost());
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
         holder.timeStamp.setText(itemModels.get(position).getPostDate().getDate());
@@ -94,11 +114,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
     }
 
     class RecyclerHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+        View layoutView;
         ItemClickListener listener;
         TextView parentWebsite,timeStamp,articleHeadline,postLikeCount;
         ImageView headerImage,postLike,postDislike;
         public RecyclerHolder(View itemView,ItemClickListener mListener) {
             super(itemView);
+            this.layoutView=itemView;
             this.listener = mListener;
             postLikeCount = itemView.findViewById(R.id.likeCounter);
             postDislike = itemView.findViewById(R.id.postDislike);
@@ -109,12 +131,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
             timeStamp= itemView.findViewById(R.id.timestamp);
             articleHeadline= itemView.findViewById(R.id.article_header_content);
             headerImage= itemView.findViewById(R.id.article_header_image);
-            itemView.setOnClickListener(this);
+            headerImage.setOnClickListener(this);
+//            itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
-            listener.onClick(view, getAdapterPosition());
+            listener.onClick(view, getAdapterPosition(),layoutView);
         }
     }
 }
