@@ -71,10 +71,11 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
         switch (view.getId()){
             case R.id.signin:
                 p("Clicked sign in");
-                startActivity(new Intent(this,LoginActivity.class));
+                startActivity(new Intent(WelcomeScreenActivity.this,LoginActivity.class));
                 break;
             case R.id.signup:
                 p("Clicked sign up");
+                startActivity(new Intent(WelcomeScreenActivity.this,SignUpActivity.class));
                 break;
             default:
 

@@ -35,10 +35,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-//        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//        if (user!=null){
-//            startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
-//        }
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user!=null){
+            startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+        }
         mReference = FirebaseDatabase.getInstance().getReference();
         initUI();
 

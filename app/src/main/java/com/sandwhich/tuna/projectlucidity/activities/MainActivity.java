@@ -35,7 +35,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
 import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
+import com.sandwhich.tuna.projectlucidity.interfaces.ImageExecutionerListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
+import com.sandwhich.tuna.projectlucidity.models.ImageExecutioner;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 import com.sandwhich.tuna.projectlucidity.models.PostResult;
 import com.sandwhich.tuna.projectlucidity.models.User;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     List<Post> retrievedPosts;
     List<Post> newPosts;
     Intent startViewPost;
+    Map<String,String> imgLoadingTasks;
 //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
     //todo add transactions for post like and dislike
     @Override
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         user = FirebaseAuth.getInstance().getCurrentUser();
+        imgLoadingTasks = new HashMap<>();
         currentUser = new User(user.getEmail(),user.getUid());
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         postRef = FirebaseDatabase.getInstance().getReference("posts");
@@ -143,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-        postRef.addValueEventListener(new ValueEventListener() {
+        postRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot posts) {
                 //todo read data here from database
@@ -151,7 +155,20 @@ public class MainActivity extends AppCompatActivity {
                     for (DataSnapshot post : posts.getChildren() ){ //get all post instances from database
                         newPosts.add(post.getValue(Post.class)); //add posts to list object
                     }
-//                    newPosts.removeAll(retrievedPosts);
+//                    newPosts.removeAll(retrievedPosts)
+                    for(Post p : newPosts){
+                        imgLoadingTasks.put("bitmaps/"+p.getUrlForFirebasePath()+".bmp",p.getImageUrl());
+                    }
+//                    ImageExecutioner imgExe = new ImageExecutioner(imgLoadingTasks,MainActivity.this);
+//                    imgExe.setImgListener(new ImageExecutionerListener() {
+//                        @Override
+//                        public void onImageExecutionCompleteListener(int responseCode) {
+//                            Log.i("imgldr","Finished loading all images into memory");
+//                        }
+//                    });
+//
+//                    Thread imgLdrThread = new Thread(imgExe);
+//                    imgLdrThread.run();
                     retrievedPosts.clear();
                     retrievedPosts.addAll(newPosts);
                     retrievedPosts.sort(new Comparator<Post>() {
@@ -195,62 +212,6 @@ public class MainActivity extends AppCompatActivity {
     }
 //  inflate UI components
     private void initUI() {
-        dialog = new Dialog(MainActivity.this);
-        dialog.setContentView(R.layout.add_post_dialog);
-        dialog.setTitle("CREATE NEW POST.");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setCancelable(true);
-
-        postURL = dialog.findViewById(R.id.input_url);
-
-        submitPost = dialog.findViewById(R.id.submitPost);
-        //button which is clicked to add post by user
-        submitPost.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                makePost();
-            }
-        });
-
-
-    }
-
-
-    //function which adds post to Firebase database
-    private void makePost() {
-        String url = postURL.getText().toString();
-        HttpUrl resolvedUrl = HttpUrl.parse(url);
-        try{
-            assert resolvedUrl != null;
-            new NetworkRequest(MainActivity.this, new AsyncTaskCompleteListener() {
-                @Override
-                //async listener for callback from async task
-                public void onTaskComplete(Post result, final ProgressDialog pd, int responseCode) {
-                    //todo stuff here for adding web page data to database
-                    if (responseCode == 404){ //bad url
-                        makeToast("There was a problem with the url you supplied.");
-                        if (pd.isShowing()) pd.dismiss();
-                        dialog.dismiss();
-                    }
-                    else if (responseCode == 300){ //amazing url
-                        postRef.child(result.urlForFirebasePath).setValue(result).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    dialog.dismiss();
-                                    if(pd.isShowing()) pd.dismiss();
-                                    makeToast("Completed adding post!");
-                                }
-                                else makeToast("An error occurred.\nPlease try adding the post later.");
-                            }
-                        });
-                    }
-                }
-            }).execute(resolvedUrl.toString()); //passes url to asynctask
-        }
-        catch (NullPointerException ex){
-            makeToast(ex.toString());
-        }
     }
 
 //    inflate action bar
@@ -265,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.addPost:
-                dialog.show();
+                startActivity(new Intent(MainActivity.this,AddPostPageActivity.class));
 
                 return true;
             default:
@@ -413,59 +374,6 @@ public class MainActivity extends AppCompatActivity {
 //  dummy func for logs
     static void makeOP(String tag,String s){
         Log.i(tag,s);
-    }
-// async task for network requests
-    private static class NetworkRequest extends AsyncTask<String,Void,Post>{
-        public AsyncTaskCompleteListener asyncTaskCompleteListener;
-        private ProgressDialog pd;
-        public NetworkRequest(Context c,AsyncTaskCompleteListener cb){
-            this.asyncTaskCompleteListener = cb;
-            pd = new ProgressDialog(c);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pd.setMessage("Adding post...");
-            pd.show();
-        }
-
-        @Override
-        protected Post doInBackground(String... strings) {
-            String url = strings[0];
-            makeOP("OG URL NIGG",url);
-            try{
-                Document doc = Jsoup.connect(url).get();
-                Element headline = doc.selectFirst("meta[property=og:title]");
-                makeOP("headline",headline.attr("content"));
-                Element desc = doc.selectFirst("meta[property=og:description]");
-                makeOP("Description",desc.attr("content"));
-                Element imageUrl = doc.selectFirst("meta[property=og:image]");
-                makeOP("Image url",imageUrl.attr("content"));
-                Element parentWebsite = doc.selectFirst("meta[property=og:site_name]");
-                makeOP("Host",parentWebsite.attr("content"));
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-
-
-                return new Post(headline.attr("content"),desc.attr("content"),
-                        imageUrl.attr("content"),parentWebsite.attr("content"), url,sdf.format(new Date()) );
-
-            }
-            catch (IOException | NullPointerException ex){
-                ex.printStackTrace();
-                return null;
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(Post s) {
-//            super.onPostExecute(s);
-            if (s == null){
-                asyncTaskCompleteListener.onTaskComplete(s,pd,404);
-            }
-            else asyncTaskCompleteListener.onTaskComplete(s,pd,300);
-        }
     }
 
 

@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Layout;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +34,7 @@ import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
+import com.sandwhich.tuna.projectlucidity.interfaces.TinyDB;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 
 import org.jsoup.Jsoup;
@@ -67,10 +69,13 @@ public class AddPostPageActivity extends AppCompatActivity implements View.OnCli
     private void initUI() {
         postRef = FirebaseDatabase.getInstance().getReference("posts");
         fStorage = FirebaseStorage.getInstance();
-        fRef = fStorage.getReferenceFromUrl("gs://projectlucidity-c07ce.appspot.com ");
+        fRef = fStorage.getReference();
         imgLoader = ImageLoader.getInstance();
         imgLoader.init(ImageLoaderConfiguration.createDefault(AddPostPageActivity.this));
         postUrlSrc = findViewById(R.id.newsUrlVal);
+        postUrlSrc.setTextIsSelectable(true);
+        postUrlSrc.setFocusable(true);
+        postUrlSrc.setFocusableInTouchMode(true);
         parentWebsite = findViewById(R.id.parent_website);
         articleImage = findViewById(R.id.article_header_image);
         timeStamp = findViewById(R.id.timestamp);
@@ -80,78 +85,98 @@ public class AddPostPageActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View v) {
-        postUrlVal = postUrlSrc.getText().toString();
-        HttpUrl cleanUrl = HttpUrl.parse(postUrlVal);
-        NetworkRequest makeAPost = new NetworkRequest(AddPostPageActivity.this, new AsyncTaskCompleteListener() {
-            @Override
-            public void onTaskComplete(final Post result, ProgressDialog pd, int responseCode) {
-                     if (pd.isShowing()) pd.dismiss();
-                     if (responseCode==300){ //amazing url
-                         timeStamp.setText(result.getPostDate().getDate());
-                         parentWebsite.setText(result.getHost());
-                         articleHeadline.setText(result.getHeadline());
-                         imgLoader.loadImage(result.getImageUrl(), new ImageSize(200, 140), new ImageLoadingListener() {
-                             @Override
-                             public void onLoadingCancelled(String imageUri, View view) {
+        if (v.getId()==R.id.submit){
+            final Button submit = findViewById(R.id.submit);
+            if (submit.getText().toString().toLowerCase().equals("submit post")){
+                submit.setEnabled(false);
+                postUrlVal = postUrlSrc.getText().toString();
+                if (postUrlVal.equals("")) {
+                    Toast.makeText(AddPostPageActivity.this,"Please provide non-empty URL.",Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    HttpUrl cleanUrl = HttpUrl.parse(postUrlVal);
+                    NetworkRequest makeAPost = new NetworkRequest(AddPostPageActivity.this, new AsyncTaskCompleteListener() {
+                        @Override
+                        public void onTaskComplete(final Post result, ProgressDialog pd, int responseCode) {
+                            if (pd.isShowing()) pd.dismiss();
+                            if (responseCode==300){ //amazing url
+                                timeStamp.setText(result.getPostDate().getDate());
+                                parentWebsite.setText(result.getHost());
+                                articleHeadline.setText(result.getHeadline());
+                                imgLoader.loadImage(result.getImageUrl(), new ImageSize(200, 140), new ImageLoadingListener() {
+                                    @Override
+                                    public void onLoadingCancelled(String imageUri, View view) {
+                                        submit.setEnabled(true);
+                                    }
 
-                             }
+                                    @Override
+                                    public void onLoadingStarted(String imageUri, View view) {
+                                        Log.i("imgldr","Started loading image from:"+result.getImageUrl());
+                                        submit.setEnabled(false);
+                                    }
 
-                             @Override
-                             public void onLoadingStarted(String imageUri, View view) {
-                                 Log.i("imgldr","Started loading image from:"+result.getImageUrl());
-                             }
+                                    @Override
+                                    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                                        Log.i("imgldr","Failed to load because:\n"+failReason.toString());
+                                        submit.setEnabled(true);
+                                    }
 
-                             @Override
-                             public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                                Log.i("imgldr","Failed to load because:\n"+failReason.toString());
-                             }
+                                    @Override
+                                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                                        Log.i("imgldr","Completed loading image");
+                                        articleImage.setImageBitmap(loadedImage);
+                                        StorageReference bmpRef = fRef.child("bitmaps/"+result.urlForFirebasePath+".bmp");
+                                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                        loadedImage.compress(Bitmap.CompressFormat.PNG,100,baos);
+                                        byte[] data = baos.toByteArray();
+                                        TinyDB db = new TinyDB(AddPostPageActivity.this);
+                                        db.putObject("bitmaps/"+result.getUrlForFirebasePath()+".bmp",loadedImage);
+                                        UploadTask uploadTask = bmpRef.putBytes(data);
+                                        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                            @Override
+                                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                                Log.i("imgldr","finished uploading bitmap");
+                                            }
+                                        });
+                                        uploadTask.addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.i("imgldr","Failed to upload bitmap");
+                                            }
+                                        });
 
-                             @Override
-                             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                                Log.i("imgldr","Completed loading image");
-                                articleImage.setImageBitmap(loadedImage);
-                                StorageReference bmpRef = fRef.child("bitmaps/"+result.urlForFirebasePath+".bmp");
-                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                 loadedImage.compress(Bitmap.CompressFormat.PNG,100,baos);
-                                 byte[] data = baos.toByteArray();
-
-                                 UploadTask uploadTask = bmpRef.putBytes(data);
-                                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                     @Override
-                                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                         Log.i("imgldr","finished uploading bitmap");
-                                     }
-                                 });
-                                 uploadTask.addOnFailureListener(new OnFailureListener() {
-                                     @Override
-                                     public void onFailure(@NonNull Exception e) {
-                                         Log.i("imgldr","Failed to upload bitmap");
-                                     }
-                                 });
-
-                                // finally allow user to create post
-                                 postRef.child(result.getUrlForFirebasePath()).setValue(result).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                     @Override
-                                     public void onComplete(@NonNull Task<Void> task) {
-                                             //back to main activity
-                                         if (task.isSuccessful()){
-                                             startActivity(new Intent(AddPostPageActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                                         }
-                                     }
-                                 });
-                             }
+                                        // finally allow user to create post
+                                        postRef.child(result.getUrlForFirebasePath()).setValue(result).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                //back to main activity
+                                                if (task.isSuccessful()){
+                                                    submit.setText("Confirm");
+                                                    submit.setEnabled(true);
+                                                }
+                                            }
+                                        });
+                                    }
 
 
-                         });
+                                });
 
-                     }
-                     else if (responseCode==404){ //something went bad
-                         if (pd.isShowing()) pd.dismiss();
-                         Toast.makeText(AddPostPageActivity.this,"There was a problem with the url which you supplied.",Toast.LENGTH_SHORT).show();
-                     }
+                            }
+                            else if (responseCode==404){ //something went bad
+                                if (pd.isShowing()) pd.dismiss();
+                                Toast.makeText(AddPostPageActivity.this,"There was a problem with the url which you supplied.",Toast.LENGTH_SHORT).show();
+                                submit.setEnabled(true);
+                            }
+                        }
+                    });
+                    makeAPost.execute(cleanUrl.toString());
+                }
+
             }
-        });
-        makeAPost.execute(cleanUrl.toString());
+            else if (submit.getText().toString().toLowerCase().equals("confirm")){
+                startActivity(new Intent(AddPostPageActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            }
+        }
 
     }
 

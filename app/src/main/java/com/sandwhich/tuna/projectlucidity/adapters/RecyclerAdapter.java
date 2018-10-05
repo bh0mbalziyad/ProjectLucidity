@@ -17,6 +17,7 @@ import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
+import com.sandwhich.tuna.projectlucidity.interfaces.TinyDB;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 import com.sandwhich.tuna.projectlucidity.models.User;
 
@@ -26,6 +27,7 @@ import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.RecyclerHolder> {
     public final List<Post> itemModels = new ArrayList<>();
+    TinyDB tdb;
     User currentUser;
 
     public User getCurrentUser() {
@@ -43,6 +45,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
         this.currentUser = currentUser;
         context = c;
         this.mListener = mListener;
+        tdb = new TinyDB(c);
 
     }
 
@@ -84,27 +87,32 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
         holder.timeStamp.setText(itemModels.get(position).getPostDate().getDate());
         holder.postLikeCount.setText(""+itemModels.get(position).getPostLikeCount());
-        imageLoader.loadImage(itemModels.get(position).getImageUrl(), new ImageLoadingListener() {
-            @Override
-            public void onLoadingStarted(String imageUri, View view) {
-
-            }
-
-            @Override
-            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                failReason.getCause().printStackTrace();
-            }
-
-            @Override
-            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                holder.headerImage.setImageBitmap(loadedImage);
-            }
-
-            @Override
-            public void onLoadingCancelled(String imageUri, View view) {
-
-            }
-        });
+//        try{
+//            holder.headerImage.setImageBitmap(tdb.getObject("bitmaps/"+itemModels.get(position).getUrlForFirebasePath()+".bmp",Bitmap.class));
+//        }catch (Exception ex){
+//            ex.printStackTrace();
+//        }
+//        imageLoader.loadImage(itemModels.get(position).getImageUrl(), new ImageLoadingListener() {
+//            @Override
+//            public void onLoadingStarted(String imageUri, View view) {
+//
+//            }
+//
+//            @Override
+//            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+//                failReason.getCause().printStackTrace();
+//            }
+//
+//            @Override
+//            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                holder.headerImage.setImageBitmap(loadedImage);
+//            }
+//
+//            @Override
+//            public void onLoadingCancelled(String imageUri, View view) {
+//
+//            }
+//        });
 
     }
 
