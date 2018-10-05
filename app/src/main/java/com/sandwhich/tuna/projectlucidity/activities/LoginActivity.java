@@ -83,19 +83,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             public void onSuccess(Void aVoid) {
                                 if (pd.isShowing()){
                                     pd.dismiss();
+                                    startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
                                 }
-                                new Handler().postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
-                                    }
-                                }, 1000);
+                                else{
+                                    startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+                                }
 
                             }
                         });
 
                     }
                     else {
+                        if (pd.isShowing()) pd.dismiss();
                         Toast.makeText(LoginActivity.this,"Entered credentials are not valid.",Toast.LENGTH_SHORT).show();
                         Log.i("LOGIN","Failed");
                     }

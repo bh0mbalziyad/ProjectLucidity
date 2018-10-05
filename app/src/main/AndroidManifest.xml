@@ -13,12 +13,14 @@
         <activity android:name=".activities.WelcomeScreenActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
-
+                <!--Added below line for testing only-->
+                <action android:name="android.intent.action.VIEW"/>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
         <activity android:name=".activities.LoginActivity"/>
         <activity android:name=".activities.SignUpActivity"/>
         <activity android:name=".activities.ViewPostActivity"/>
+        <activity android:name=".activities.AddPostPageActivity"/>
     </application>
 </manifest>
