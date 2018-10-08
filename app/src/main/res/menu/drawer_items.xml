@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/my_account"
+            android:title="My Account"
+            android:icon="@drawable/current_user" />
+        <item
+            android:id="@+id/likedPosts"
+            android:title="Liked posts" />
+        <item
+            android:id="@+id/about_app"
+            android:title="About"/>
+    </group>
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/signout"
+            android:title="Sign-out"/>
+    </group>
+</menu>

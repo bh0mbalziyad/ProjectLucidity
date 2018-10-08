@@ -3,6 +3,11 @@
   <component name="WizardSettings">
     <option name="children">
       <map>
+        <entry key="imageWizard">
+          <value>
+            <PersistentState />
+          </value>
+        </entry>
         <entry key="vectorWizard">
           <value>
             <PersistentState>
@@ -18,7 +23,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/D:/Softwares/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_arrow_upward_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/home/ziyadbhombal/Public/android/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_menu_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -28,10 +33,10 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="color" value="ee3647" />
-                            <entry key="outputName" value="post_liked" />
+                            <entry key="color" value="060102" />
+                            <entry key="outputName" value="ic_menu" />
                             <entry key="overrideSize" value="true" />
-                            <entry key="sourceFile" value="C:\Users\Brave" />
+                            <entry key="sourceFile" value="$USER_HOME$/C:\Users\Brave" />
                           </map>
                         </option>
                       </PersistentState>

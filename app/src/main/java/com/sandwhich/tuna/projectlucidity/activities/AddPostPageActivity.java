@@ -92,6 +92,7 @@ public class AddPostPageActivity extends AppCompatActivity implements View.OnCli
                 postUrlVal = postUrlSrc.getText().toString();
                 if (postUrlVal.equals("")) {
                     Toast.makeText(AddPostPageActivity.this,"Please provide non-empty URL.",Toast.LENGTH_SHORT).show();
+                    submit.setEnabled(true);
                 }
                 else{
                     HttpUrl cleanUrl = HttpUrl.parse(postUrlVal);

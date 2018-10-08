@@ -1,20 +1,22 @@
 package com.sandwhich.tuna.projectlucidity.activities;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.net.NetworkRequest;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -73,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
     List<Post> newPosts;
     Intent startViewPost;
     Map<String,String> imgLoadingTasks;
+    Toolbar toolbar;
+    DrawerLayout mDrawerLayout;
+    NavigationView navigationView;
 //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
     //todo add transactions for post like and dislike
     @Override
@@ -212,19 +217,58 @@ public class MainActivity extends AppCompatActivity {
     }
 //  inflate UI components
     private void initUI() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar supportActionBar = getSupportActionBar();
+        supportActionBar.setDisplayHomeAsUpEnabled(true);
+        supportActionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        supportActionBar.setTitle("Project Lucidity");
+        mDrawerLayout = findViewById(R.id.navDrawer);
+        NavigationView navBar = findViewById(R.id.navBar);
+        navBar.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                mDrawerLayout.closeDrawers();
+                item.setChecked(true);
+                switch (item.getItemId()){
+                    case R.id.signout:
+                        makeToast("Signout");
+                        return true;
+                    case R.id.my_account:
+                        makeToast("My account");
+                        return true;
+                    case R.id.likedPosts:
+                        makeToast("Liked posts");
+                        return true;
+                    case R.id.about_app:
+                        makeToast("About app");
+                        return true;
+                    default:
+                            return true;
+                }
+            }
+        });
     }
 
-//    inflate action bar
+//        listen for action bar clicks
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.add_post,menu);
         return true;
     }
-//    listen for action bar clicks
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+//                makeToast("Clicked homeasup");
+
+                return true;
+
             case R.id.addPost:
                 startActivity(new Intent(MainActivity.this,AddPostPageActivity.class));
 
