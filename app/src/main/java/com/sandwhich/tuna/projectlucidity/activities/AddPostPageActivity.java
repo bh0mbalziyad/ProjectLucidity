@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -103,62 +105,20 @@ public class AddPostPageActivity extends AppCompatActivity implements View.OnCli
                                 timeStamp.setText(result.getPostDate().getDate());
                                 parentWebsite.setText(result.getHost());
                                 articleHeadline.setText(result.getHeadline());
-                                imgLoader.loadImage(result.getImageUrl(), new ImageSize(200, 140), new ImageLoadingListener() {
+                                Glide.with(AddPostPageActivity.this)
+                                        .load(result.getImageUrl())
+                                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                        .into(articleImage);
+                                // finally allow user to create post
+                                postRef.child(result.getUrlForFirebasePath()).setValue(result).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
-                                    public void onLoadingCancelled(String imageUri, View view) {
-                                        submit.setEnabled(true);
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        //back to main activity
+                                        if (task.isSuccessful()){
+                                            submit.setText("Confirm");
+                                            submit.setEnabled(true);
+                                        }
                                     }
-
-                                    @Override
-                                    public void onLoadingStarted(String imageUri, View view) {
-                                        Log.i("imgldr","Started loading image from:"+result.getImageUrl());
-                                        submit.setEnabled(false);
-                                    }
-
-                                    @Override
-                                    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                                        Log.i("imgldr","Failed to load because:\n"+failReason.toString());
-                                        submit.setEnabled(true);
-                                    }
-
-                                    @Override
-                                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                                        Log.i("imgldr","Completed loading image");
-                                        articleImage.setImageBitmap(loadedImage);
-                                        StorageReference bmpRef = fRef.child("bitmaps/"+result.urlForFirebasePath+".bmp");
-                                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                        loadedImage.compress(Bitmap.CompressFormat.PNG,100,baos);
-                                        byte[] data = baos.toByteArray();
-                                        TinyDB db = new TinyDB(AddPostPageActivity.this);
-                                        db.putObject("bitmaps/"+result.getUrlForFirebasePath()+".bmp",loadedImage);
-                                        UploadTask uploadTask = bmpRef.putBytes(data);
-                                        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                            @Override
-                                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                                Log.i("imgldr","finished uploading bitmap");
-                                            }
-                                        });
-                                        uploadTask.addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.i("imgldr","Failed to upload bitmap");
-                                            }
-                                        });
-
-                                        // finally allow user to create post
-                                        postRef.child(result.getUrlForFirebasePath()).setValue(result).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                //back to main activity
-                                                if (task.isSuccessful()){
-                                                    submit.setText("Confirm");
-                                                    submit.setEnabled(true);
-                                                }
-                                            }
-                                        });
-                                    }
-
-
                                 });
 
                             }

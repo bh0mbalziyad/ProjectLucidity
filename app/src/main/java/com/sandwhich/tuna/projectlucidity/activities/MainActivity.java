@@ -1,8 +1,8 @@
 package com.sandwhich.tuna.projectlucidity.activities;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,7 +10,6 @@ import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.TextInputEditText;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -23,7 +22,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -35,11 +33,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
 import com.sandwhich.tuna.projectlucidity.interfaces.ImageExecutionerListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
-import com.sandwhich.tuna.projectlucidity.models.ImageExecutioner;
+import com.sandwhich.tuna.projectlucidity.interfaces.TinyDB;
 import com.sandwhich.tuna.projectlucidity.models.Post;
 import com.sandwhich.tuna.projectlucidity.models.PostResult;
 import com.sandwhich.tuna.projectlucidity.models.User;
@@ -179,20 +181,10 @@ public class MainActivity extends AppCompatActivity {
                             return 0;
                         }
                     });
-                for(Post p : newPosts){
-                    imgLoadingTasks.put("bitmaps/"+p.getPostUrl()+".bmp",p.getImageUrl());
-                }
-                ImageExecutioner imgExe = new ImageExecutioner(imgLoadingTasks,MainActivity.this);
-                imgExe.setImgListener(new ImageExecutionerListener() {
-                    @Override
-                    public void onImageExecutionCompleteListener(int responseCode) {
-                        Log.i("imgldr","Finished loading all images into memory");
-
+                    for(Post p : newPosts){
+                        imgLoadingTasks.put(p.getPostUrl(),p.getImageUrl());
                     }
-                });
-                AsyncTask.execute(imgExe);
                     newsFeedAdapter.addItems(retrievedPosts); //add list object to adapter
-//                    newsFeed.setAdapter(newsFeedAdapter);
                     makeOP("FireDB","Added items from database");
 
             }
@@ -223,9 +215,8 @@ public class MainActivity extends AppCompatActivity {
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     case R.id.my_account:
-                        makeToast("My account");
-                        item.setChecked(true);
                         mDrawerLayout.closeDrawer(GravityCompat.START);
+                        startActivity(new Intent(MainActivity.this,MyAccountActivity.class));
                         return true;
                     case R.id.likedPosts:
                         makeToast("Liked posts");
@@ -425,6 +416,5 @@ public class MainActivity extends AppCompatActivity {
     static void makeOP(String tag,String s){
         Log.i(tag,s);
     }
-
 
 }

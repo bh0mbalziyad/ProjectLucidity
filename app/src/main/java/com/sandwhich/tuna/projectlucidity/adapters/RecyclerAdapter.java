@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -92,39 +94,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
         holder.timeStamp.setText(itemModels.get(position).getPostDate().getDate());
         holder.postLikeCount.setText(""+itemModels.get(position).getPostLikeCount());
-        try{
-            holder.headerImage.setImageBitmap(tdb.getImage("bitmaps/"+itemModels.get(position).getPostUrl()+".bmp"));
-        }catch (Exception ex){
-            System.out.println("Unable to fetch bitmaps");
-            ex.printStackTrace();
-        }
-//        try{
-//            holder.headerImage.setImageBitmap(tdb.getObject("bitmaps/"+itemModels.get(position).getUrlForFirebasePath()+".bmp",Bitmap.class));
-//        }catch (Exception ex){
-//            ex.printStackTrace();
-//        }
-//        imageLoader.loadImage(itemModels.get(position).getImageUrl(), new ImageLoadingListener() {
-//            @Override
-//            public void onLoadingStarted(String imageUri, View view) {
-//
-//            }
-//
-//            @Override
-//            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-//                failReason.getCause().printStackTrace();
-//            }
-//
-//            @Override
-//            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                holder.headerImage.setImageBitmap(loadedImage);
-//            }
-//
-//            @Override
-//            public void onLoadingCancelled(String imageUri, View view) {
-//
-//            }
-//        });
-
+        //for loading image from url into ImageView
+        Glide.with(this.context)
+                .load(itemModels.get(position).getImageUrl())
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.headerImage);
     }
 
     @Override

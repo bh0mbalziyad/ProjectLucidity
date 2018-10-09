@@ -22,5 +22,6 @@
         <activity android:name=".activities.SignUpActivity"/>
         <activity android:name=".activities.ViewPostActivity"/>
         <activity android:name=".activities.AddPostPageActivity"/>
+        <activity android:name=".activities.MyAccountActivity"/>
     </application>
 </manifest>
