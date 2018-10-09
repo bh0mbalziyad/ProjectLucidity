@@ -3,6 +3,7 @@ package com.sandwhich.tuna.projectlucidity.activities;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -36,7 +37,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sandwhich.tuna.projectlucidity.R;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
-import com.sandwhich.tuna.projectlucidity.interfaces.AsyncTaskCompleteListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ImageExecutionerListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
 import com.sandwhich.tuna.projectlucidity.models.ImageExecutioner;
@@ -45,11 +45,6 @@ import com.sandwhich.tuna.projectlucidity.models.PostResult;
 import com.sandwhich.tuna.projectlucidity.models.User;
 import com.sandwhich.tuna.projectlucidity.models.UserStatus;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -59,25 +54,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import okhttp3.HttpUrl;
-
 public class MainActivity extends AppCompatActivity {
     User currentUser;
     Vibrator mVibrator;
     FirebaseUser user;
     DatabaseReference postRef;
-    Dialog dialog;
-    Button submitPost;
-    TextInputEditText postURL;
     RecyclerView newsFeed;
     RecyclerAdapter newsFeedAdapter;
     List<Post> retrievedPosts;
     List<Post> newPosts;
     Intent startViewPost;
     Map<String,String> imgLoadingTasks;
-    Toolbar toolbar;
     DrawerLayout mDrawerLayout;
-    NavigationView navigationView;
 //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
     //todo add transactions for post like and dislike
     @Override
@@ -117,13 +105,13 @@ public class MainActivity extends AppCompatActivity {
                         mVibrator.vibrate(100);
                         Log.i("Clicked","Like at pos:"+position);
                         UserStatus u1 = getUserStatusOnPost(post,currentUser);
-                        likePost(databaseReference, post, u1, Post.getUrlForFirebasePath(post.getPostUrl()));
+                        likePost(databaseReference, post, u1, Post.getUrlForFirebasePath(post.getPostUrl()),position,newsFeedAdapter);
                         break;
                     case R.id.postDislike:
                         mVibrator.vibrate(100);
                         Log.i("Clicked","Dislike at pos:"+position);
                         UserStatus u2 = getUserStatusOnPost(post,currentUser);
-                        dislikePost(databaseReference, post, u2, Post.getUrlForFirebasePath(post.getPostUrl()));
+                        dislikePost(databaseReference, post, u2, Post.getUrlForFirebasePath(post.getPostUrl()),position,newsFeedAdapter);
                         break;
                     case R.id.article_header_image:
                         Log.i("Clicked","Default clicked at pos:"+position);
@@ -139,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
         });
         newsFeed.setAdapter(newsFeedAdapter);
         newsFeed.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
-        FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 currentUser = dataSnapshot.getValue(User.class);
@@ -152,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-        postRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        postRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot posts) {
                 //todo read data here from database
@@ -161,19 +149,7 @@ public class MainActivity extends AppCompatActivity {
                         newPosts.add(post.getValue(Post.class)); //add posts to list object
                     }
 //                    newPosts.removeAll(retrievedPosts)
-                    for(Post p : newPosts){
-                        imgLoadingTasks.put("bitmaps/"+p.getUrlForFirebasePath()+".bmp",p.getImageUrl());
-                    }
-//                    ImageExecutioner imgExe = new ImageExecutioner(imgLoadingTasks,MainActivity.this);
-//                    imgExe.setImgListener(new ImageExecutionerListener() {
-//                        @Override
-//                        public void onImageExecutionCompleteListener(int responseCode) {
-//                            Log.i("imgldr","Finished loading all images into memory");
-//                        }
-//                    });
-//
-//                    Thread imgLdrThread = new Thread(imgExe);
-//                    imgLdrThread.run();
+
                     retrievedPosts.clear();
                     retrievedPosts.addAll(newPosts);
                     retrievedPosts.sort(new Comparator<Post>() {
@@ -203,6 +179,18 @@ public class MainActivity extends AppCompatActivity {
                             return 0;
                         }
                     });
+                for(Post p : newPosts){
+                    imgLoadingTasks.put("bitmaps/"+p.getPostUrl()+".bmp",p.getImageUrl());
+                }
+                ImageExecutioner imgExe = new ImageExecutioner(imgLoadingTasks,MainActivity.this);
+                imgExe.setImgListener(new ImageExecutionerListener() {
+                    @Override
+                    public void onImageExecutionCompleteListener(int responseCode) {
+                        Log.i("imgldr","Finished loading all images into memory");
+
+                    }
+                });
+                AsyncTask.execute(imgExe);
                     newsFeedAdapter.addItems(retrievedPosts); //add list object to adapter
 //                    newsFeed.setAdapter(newsFeedAdapter);
                     makeOP("FireDB","Added items from database");
@@ -228,20 +216,26 @@ public class MainActivity extends AppCompatActivity {
         navBar.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                mDrawerLayout.closeDrawers();
-                item.setChecked(true);
                 switch (item.getItemId()){
                     case R.id.signout:
                         makeToast("Signout");
+                        item.setChecked(true);
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     case R.id.my_account:
                         makeToast("My account");
+                        item.setChecked(true);
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     case R.id.likedPosts:
                         makeToast("Liked posts");
+                        item.setChecked(true);
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     case R.id.about_app:
                         makeToast("About app");
+                        item.setChecked(true);
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     default:
                             return true;
@@ -305,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //    function to like a given post
-    public void likePost(DatabaseReference ref, Post post, UserStatus status, String postUrl){
+    public void likePost(DatabaseReference ref, Post post, UserStatus status, String postUrl, int position, RecyclerAdapter adp){
         Map<String,Object> tasks = new HashMap<>();
         switch (status){
             //post already liked
@@ -313,6 +307,8 @@ public class MainActivity extends AppCompatActivity {
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.NEUTRAl);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.NEUTRAl);
+//                post.setPostLikeCount(post.getPostLikeCount()-1);
+//                adp.updateItem(post,position);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -325,6 +321,8 @@ public class MainActivity extends AppCompatActivity {
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.LIKED);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.LIKED);
+//                post.setPostLikeCount(post.getPostLikeCount()+1);
+//                adp.updateItem(post,position);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -337,6 +335,8 @@ public class MainActivity extends AppCompatActivity {
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+2);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.LIKED);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.LIKED);
+//                post.setPostLikeCount(post.getPostLikeCount()+2);
+//                adp.updateItem(post,position);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     //    function to dislike a given post
-    public void dislikePost(DatabaseReference ref, Post post, UserStatus status, String postUrl){
+    public void dislikePost(DatabaseReference ref, Post post, UserStatus status, String postUrl,int position, RecyclerAdapter adp){
         Map<String,Object> tasks = new HashMap<>();
         switch (status){
             //post already liked
@@ -355,6 +355,8 @@ public class MainActivity extends AppCompatActivity {
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-2);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.DISLIKED);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.DISLIKED);
+//                post.setPostLikeCount(post.getPostLikeCount()-2);
+//                adp.updateItem(post,position);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -367,6 +369,8 @@ public class MainActivity extends AppCompatActivity {
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()-1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.DISLIKED);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.DISLIKED);
+//                post.setPostLikeCount(post.getPostLikeCount()-1);
+//                adp.updateItem(post,position);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -379,6 +383,8 @@ public class MainActivity extends AppCompatActivity {
                 tasks.put("/posts/"+postUrl+"/postLikeCount",post.getPostLikeCount()+1);
                 tasks.put("/users/"+currentUser.getUid()+"/likedPosts/"+postUrl,PostResult.NEUTRAl);
                 tasks.put("/posts/"+postUrl+"/usersWhoLiked/"+currentUser.getUid(),PostResult.NEUTRAl);
+//                post.setPostLikeCount(post.getPostLikeCount()+1);
+//                adp.updateItem(post,position);
                 ref.updateChildren(tasks).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {

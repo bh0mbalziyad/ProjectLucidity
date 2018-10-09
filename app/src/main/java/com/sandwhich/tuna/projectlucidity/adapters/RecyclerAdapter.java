@@ -55,6 +55,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
         notifyDataSetChanged();
     }
 
+    public void updateItem(Post p,int position){
+        itemModels.set(position,p);
+        notifyItemChanged(position);
+    }
+
     @Override
     public RecyclerHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         imageLoader.init(ImageLoaderConfiguration.createDefault(context));
@@ -87,6 +92,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
         holder.articleHeadline.setText(itemModels.get(position).getHeadline());
         holder.timeStamp.setText(itemModels.get(position).getPostDate().getDate());
         holder.postLikeCount.setText(""+itemModels.get(position).getPostLikeCount());
+        try{
+            holder.headerImage.setImageBitmap(tdb.getImage("bitmaps/"+itemModels.get(position).getPostUrl()+".bmp"));
+        }catch (Exception ex){
+            System.out.println("Unable to fetch bitmaps");
+            ex.printStackTrace();
+        }
 //        try{
 //            holder.headerImage.setImageBitmap(tdb.getObject("bitmaps/"+itemModels.get(position).getUrlForFirebasePath()+".bmp",Bitmap.class));
 //        }catch (Exception ex){
