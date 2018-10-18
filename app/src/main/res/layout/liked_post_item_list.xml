@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp">
+    <RelativeLayout
+        android:id="@+id/elementContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/content_overview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/parent_website"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:padding="2dp"
+                android:text="Parent website"
+                android:textColor="#2238a4" />
+
+            <TextView
+                android:id="@+id/timestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:padding="2dp"
+                android:text="Timestamp"
+                android:textColor="#f45d22" />
+        </LinearLayout>
+        <ImageView
+            android:layout_below="@id/content_overview"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="8dp"
+            android:id="@+id/article_header_image"
+            android:layout_width="match_parent"
+            android:layout_height="150dp" />
+        <TextView
+            android:textSize="17sp"
+            android:textColor="#2b2b2b"
+            android:text="This is the default text that will be shown"
+            android:layout_below="@id/article_header_image"
+            android:layout_margin="8dp"
+            android:padding="4dp"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/article_header_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+
+
+</android.support.v7.widget.CardView>

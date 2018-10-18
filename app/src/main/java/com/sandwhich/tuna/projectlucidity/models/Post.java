@@ -33,6 +33,7 @@ public class Post implements Parcelable{
     private String postUrl;
     private DateTimeModel postDate; //todo add time function
     private Map<String,PostResult> usersWhoLiked = new HashMap<>();
+    private long postLikeCount;
 
     public Map<String, PostResult> getUsersWhoLiked() {
         return usersWhoLiked;
@@ -41,9 +42,6 @@ public class Post implements Parcelable{
     public void setUsersWhoLiked(Map<String, PostResult> usersWhoLiked) {
         this.usersWhoLiked = usersWhoLiked;
     }
-
-    private long postLikeCount;
-//    private HashMap<String,String> likedPosts;
 
     protected Post(Parcel in) {
         headline = in.readString();

@@ -17,6 +17,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.sandwhich.tuna.projectlucidity.R;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
     FirebaseAuth mAuth;
     ProgressDialog pd;
@@ -55,7 +58,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
     private void initUI() {
         pd = new ProgressDialog(SignUpActivity.this);
-        pd.setTitle("Signing you up...");
+        pd.setTitle("Signing you up");
         pd.setCancelable(false);
         pd.setCanceledOnTouchOutside(false);
         mAuth = FirebaseAuth.getInstance();
@@ -83,11 +86,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                                 pd.dismiss();
                                 Intent intent = new Intent(SignUpActivity.this,MainActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("newuser",true);
                                 startActivity(intent);
                             }
                             else{
                                 Intent intent = new Intent(SignUpActivity.this,MainActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("newuser",true);
                                 startActivity(intent);
                             }
 

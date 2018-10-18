@@ -38,6 +38,7 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sandwhich.tuna.projectlucidity.R;
+import com.sandwhich.tuna.projectlucidity.adapters.LikedPostRecycler;
 import com.sandwhich.tuna.projectlucidity.adapters.RecyclerAdapter;
 import com.sandwhich.tuna.projectlucidity.interfaces.ImageExecutionerListener;
 import com.sandwhich.tuna.projectlucidity.interfaces.ItemClickListener;
@@ -88,12 +89,20 @@ public class MainActivity extends AppCompatActivity {
 
         }
         startViewPost = new Intent(MainActivity.this,ViewPostActivity.class);
+        initUser();
         initUI();
         initRecycler();
     }
 
+    private void initUser() {
+        if (getIntent().getBooleanExtra("newuser",false)){
+            FirebaseDatabase.getInstance().getReference("users/"+user.getUid()).setValue(new User(user.getEmail(),user.getUid()));
+        }
 
-//  inflate recycler view
+    }
+
+
+    //  inflate recycler view
     private void initRecycler() {
         newsFeed = findViewById(R.id.newsFeedRecycler);
         newsFeedAdapter = new RecyclerAdapter(MainActivity.this,currentUser, new ItemClickListener() {
@@ -202,30 +211,30 @@ public class MainActivity extends AppCompatActivity {
         ActionBar supportActionBar = getSupportActionBar();
         supportActionBar.setDisplayHomeAsUpEnabled(true);
         supportActionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        supportActionBar.setTitle("Project Lucidity");
+        supportActionBar.setTitle("Home");
         mDrawerLayout = findViewById(R.id.navDrawer);
         NavigationView navBar = findViewById(R.id.navBar);
         navBar.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()){
+                    case R.id.home:
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
+                        return true;
                     case R.id.signout:
-                        makeToast("Signout");
-                        item.setChecked(true);
+                        FirebaseAuth.getInstance().signOut();
+                        startActivity(new Intent(getBaseContext(),WelcomeScreenActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     case R.id.my_account:
                         mDrawerLayout.closeDrawer(GravityCompat.START);
-                        startActivity(new Intent(MainActivity.this,MyAccountActivity.class));
+                        startActivity(new Intent(MainActivity.this,MyAccountActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         return true;
                     case R.id.likedPosts:
-                        makeToast("Liked posts");
-                        item.setChecked(true);
-                        mDrawerLayout.closeDrawer(GravityCompat.START);
-                        return true;
-                    case R.id.about_app:
-                        makeToast("About app");
-                        item.setChecked(true);
+                        startActivity(new Intent(getBaseContext(), MyLikedPostsActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     default:

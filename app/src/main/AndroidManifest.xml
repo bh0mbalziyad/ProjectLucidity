@@ -23,5 +23,6 @@
         <activity android:name=".activities.ViewPostActivity"/>
         <activity android:name=".activities.AddPostPageActivity"/>
         <activity android:name=".activities.MyAccountActivity"/>
+        <activity android:name=".activities.MyLikedPostsActivity"/>
     </application>
 </manifest>

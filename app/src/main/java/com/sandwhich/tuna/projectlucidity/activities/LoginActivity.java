@@ -75,21 +75,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     if(task.isSuccessful()){
                         //login successfull
                         Log.i("LOGIN","Login Succesfull");
-                        Map<String,Object> tasks = new HashMap<>();
-                        tasks.put("/users/"+FirebaseAuth.getInstance().getUid(), new User(FirebaseAuth.getInstance().getCurrentUser().getEmail(),FirebaseAuth.getInstance().getUid()));
-                        mReference.updateChildren(tasks).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                if (pd.isShowing()){
-                                    pd.dismiss();
-                                    startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
-                                }
-                                else{
-                                    startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
-                                }
-
-                            }
-                        });
+                        if (pd.isShowing()){
+                            pd.dismiss();
+                            startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+                        }
+                        else{
+                            startActivity(new Intent(LoginActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+                        }
 
                     }
                     else {

@@ -1,6 +1,9 @@
 package com.sandwhich.tuna.projectlucidity.activities;
 
+import android.app.ActivityManager;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -27,6 +30,7 @@ import com.sandwhich.tuna.projectlucidity.models.PostResult;
 import com.sandwhich.tuna.projectlucidity.models.User;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MyAccountActivity extends AppCompatActivity {
@@ -39,6 +43,7 @@ public class MyAccountActivity extends AppCompatActivity {
     NavigationView navigationView;
     TextView totalLikedPosts,totalDislikedPosts,totalKarma;
     TextView userName,userEmail;
+    String currentActivity;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,34 +68,56 @@ public class MyAccountActivity extends AppCompatActivity {
 
     private void updateUI(MyAccountUser currentUser) {
         Map<String, PostResult> postResultMap;
-        postResultMap = currentUser.getLikedPosts();
         int likedPosts=0,dislikedPosts=0,karmaCount=0;
-        for (String key : postResultMap.keySet()){
-            switch (postResultMap.get(key)){
-                case LIKED:
-                    likedPosts+=1;
-                    break;
-                case NEUTRAl:
-                    break;
-                case DISLIKED:
-                    dislikedPosts+=1;
-                    break;
-                    default:
+        try{
+            
+            postResultMap = currentUser.getLikedPosts();
+            if (postResultMap.size()<=0){
+                totalLikedPosts.setText(""+likedPosts);
+                totalDislikedPosts.setText(""+dislikedPosts);
+                totalKarma.setText(""+karmaCount);
+                userEmail.setText(currentUser.getEmail());
+                userName.setText(currentUser.getEmail().split("@")[0]);
             }
-        }
-        karmaCount = likedPosts+dislikedPosts;
+            else{
+                for (String key : postResultMap.keySet()){
+                    switch (postResultMap.get(key)){
+                        case LIKED:
+                            likedPosts+=1;
+                            break;
+                        case NEUTRAl:
+                            break;
+                        case DISLIKED:
+                            dislikedPosts+=1;
+                            break;
+                        default:
+                    }
+                }
+                karmaCount = likedPosts+dislikedPosts;
 
-        totalLikedPosts.setText(""+likedPosts);
-        totalDislikedPosts.setText(""+dislikedPosts);
-        totalKarma.setText(""+karmaCount);
-        userEmail.setText(currentUser.getEmail());
-        userName.setText(currentUser.getEmail().split("@")[0]);
+                totalLikedPosts.setText(""+likedPosts);
+                totalDislikedPosts.setText(""+dislikedPosts);
+                totalKarma.setText(""+karmaCount);
+                userEmail.setText(currentUser.getEmail());
+                userName.setText(currentUser.getEmail().split("@")[0]);    
+            }
+            
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+            totalLikedPosts.setText(""+likedPosts);
+            totalDislikedPosts.setText(""+dislikedPosts);
+            totalKarma.setText(""+karmaCount);
+            userEmail.setText("--");
+            userName.setText("--");
+        }
 
 
 
     }
 
     private void initUI() {
+        this.currentActivity = "MyAccount";
         userEmail = findViewById(R.id.user_email);
         userName = findViewById(R.id.username);
         totalLikedPosts = findViewById(R.id.likedPostNumber);
@@ -103,27 +130,28 @@ public class MyAccountActivity extends AppCompatActivity {
         ActionBar supportActionBar = getSupportActionBar();
         supportActionBar.setDisplayHomeAsUpEnabled(true);
         supportActionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        supportActionBar.setTitle("My Account");
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()){
+                    case R.id.home:
+                        startActivity(new Intent(MyAccountActivity.this,MainActivity.class)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
+                        return true;
                     case R.id.signout:
-                        item.setChecked(true);
+                        FirebaseAuth.getInstance().signOut();
+                        startActivity(new Intent(getBaseContext(),WelcomeScreenActivity.class)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     case R.id.my_account:
-                        makeToast("My account");
-                        item.setChecked(true);
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     case R.id.likedPosts:
-                        makeToast("Liked posts");
-                        item.setChecked(true);
-                        mDrawerLayout.closeDrawer(GravityCompat.START);
-                        return true;
-                    case R.id.about_app:
-                        makeToast("About app");
-                        item.setChecked(true);
+                        startActivity(new Intent(getBaseContext(),MyLikedPostsActivity.class)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         return true;
                     default:
@@ -140,6 +168,22 @@ public class MyAccountActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    boolean doubleBackPressedToExit = false;
+    @Override
+    public void onBackPressed() {
+        if (doubleBackPressedToExit) finish();
+
+        doubleBackPressedToExit = true;
+        Toast.makeText(getBaseContext(),"Press back again to exit",Toast.LENGTH_SHORT).show();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                doubleBackPressedToExit=false;
+            }
+        }, 2000);
+
     }
 
     //  dummy func for toasts
