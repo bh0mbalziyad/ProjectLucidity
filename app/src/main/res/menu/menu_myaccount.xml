@@ -4,17 +4,19 @@
         <item
             android:id="@+id/home"
             android:title="Home"
-            android:icon="@drawable/current_user" />
+            android:icon="@drawable/ic_home" />
         <item
             android:id="@+id/my_account"
             android:title="My Account"
-            android:icon="@drawable/current_user" />
+            android:icon="@drawable/ic_myaccount" />
         <item
+            android:icon="@drawable/ic_likedposts"
             android:id="@+id/likedPosts"
             android:title="Liked posts" />
     </group>
     <group android:checkableBehavior="none">
         <item android:id="@+id/signout"
+            android:icon="@drawable/ic_sign_out"
             android:title="Sign-out"/>
     </group>
 </menu>

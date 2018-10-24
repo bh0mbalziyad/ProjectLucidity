@@ -6,9 +6,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -17,10 +20,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.sandwhich.tuna.projectlucidity.R;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
+    Toolbar toolbar;
+    ImageView backButtonToolbar;
+    TextInputLayout userEmailLayout,userPasswordConfirmLayout;
     FirebaseAuth mAuth;
     ProgressDialog pd;
     String userEmailVal;
@@ -62,6 +66,19 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         pd.setCancelable(false);
         pd.setCanceledOnTouchOutside(false);
         mAuth = FirebaseAuth.getInstance();
+
+        userEmailLayout = findViewById(R.id.textInputEmail);
+        userPasswordConfirmLayout = findViewById(R.id.textInputPasswordConfirm);
+
+        toolbar = findViewById(R.id.toolbar);
+        backButtonToolbar = findViewById(R.id.backButtonToolbar);
+        backButtonToolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+
         userEmail = findViewById(R.id.user_email);
         userPassword = findViewById(R.id.user_password);
         userPasswordConfirmed = findViewById(R.id.user_passwordConfirm);
@@ -113,19 +130,23 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 if (pd.isShowing()) pd.dismiss();
 
                 if (!isValid(userEmailVal,EMAIL)){
-                    Toast.makeText(SignUpActivity.this,"Entered email is not valid.",Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(SignUpActivity.this,"Entered email is not valid.",Toast.LENGTH_SHORT).show();
+                    userEmailLayout.setError("Enter a valid email");
                 }
                 else if(!isValid(userPasswordValConfirm,PASSWORD)){
-                    Toast.makeText(SignUpActivity.this,"Entered password is too short or too long.",Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(SignUpActivity.this,"Entered password is too short or too long.",Toast.LENGTH_SHORT).show();
+                    userPasswordConfirmLayout.setError("Password must be between 8-18 characters");
                 }
                 else{
-                    Toast.makeText(SignUpActivity.this,"Entered credentials are not valid.",Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(SignUpActivity.this,"Entered credentials are not valid.",Toast.LENGTH_SHORT).show();
+                    userPasswordConfirmLayout.setError("Entered credentials couldn't be accepted");
                 }
             }
         }
         else{
             if (pd.isShowing()) pd.dismiss();
-            Toast.makeText(SignUpActivity.this,"Passwords entered don't match.",Toast.LENGTH_SHORT).show();
+//            Toast.makeText(SignUpActivity.this,"Passwords entered don't match.",Toast.LENGTH_SHORT).show();
+            userPasswordConfirmLayout.setError("Entered passwords don't match");
         }
     }
 }

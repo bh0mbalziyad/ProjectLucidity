@@ -5,4 +5,14 @@
         app:showAsAction="always"
         android:icon="@drawable/add_post"
         android:title="Add post"/>
+    <group>
+        <item
+            app:showAsAction="never"
+            android:title="Sort by Most Liked"
+            android:id="@+id/sortByLikes"/>
+        <item
+            app:showAsAction="never"
+            android:title="Sort by most recent"
+            android:id="@+id/sortByDate"/>
+    </group>
 </menu>

@@ -1,6 +1,7 @@
 package com.sandwhich.tuna.projectlucidity.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -68,6 +69,7 @@ public class MyLikedPostsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v, int position, View completeView) {
                 Log.i("Liked posts","Clicked-"+position);
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(postList.get(position).getPostUrl())));
             }
         });
         postRecycler.setLayoutManager(new LinearLayoutManager(getBaseContext(),LinearLayoutManager.VERTICAL,false));

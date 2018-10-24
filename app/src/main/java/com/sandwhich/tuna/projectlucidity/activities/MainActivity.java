@@ -3,6 +3,7 @@ package com.sandwhich.tuna.projectlucidity.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -96,7 +97,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void initUser() {
         if (getIntent().getBooleanExtra("newuser",false)){
-            FirebaseDatabase.getInstance().getReference("users/"+user.getUid()).setValue(new User(user.getEmail(),user.getUid()));
+//            FirebaseDatabase.getInstance().getReference("users/"+user.getUid()).setValue(new User(user.getEmail(),user.getUid()));
+            Map<String,Object> tasks = new HashMap<>();
+            tasks.put("users/"+user.getUid(),new User(user.getEmail(),user.getUid()));
+            FirebaseDatabase.getInstance().getReference().updateChildren(tasks);
         }
 
     }
@@ -129,7 +133,8 @@ public class MainActivity extends AppCompatActivity {
                         Bundle bundle = new Bundle();
                         bundle.putParcelable("post-obj",post);
                         startViewPost.putExtras(bundle);
-                        startActivity(startViewPost);
+//                        startActivity(startViewPost);
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(post.getPostUrl())));
                         break;
 
                 }
@@ -267,8 +272,108 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this,AddPostPageActivity.class));
 
                 return true;
+            case R.id.sortByDate:
+                    if(sortPostByDate()){
+                        Log.i("Sorted by date:","yes");
+                        item.setChecked(true);
+                        return true;
+                    }
+                    else{
+                        Log.i("Sorted by date:","no");
+                        return false;
+                    }
+
+            case R.id.sortByLikes:
+                    if(sortPostByLikes()){
+                        Log.i("Sorted by likes:","yes");
+                        return true;
+                    }
+                    else{
+                        Log.i("Sorted by likes:","no");
+                        return false;
+                    }
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private boolean sortPostByLikes() {
+        if (newPosts.size()!=0){
+            newPosts.sort(new Comparator<Post>() {
+                @Override
+                public int compare(Post p1, Post p2) {
+                    int p1LikeCount=0;
+                    int p2LikeCount=0;
+                    for (String key : p1.getUsersWhoLiked().keySet()){
+                        switch (p1.getUsersWhoLiked().get(key)){
+                            case LIKED:
+                                p1LikeCount++;
+
+                        }
+                    }
+                    for (String key : p2.getUsersWhoLiked().keySet()){
+                        switch (p2.getUsersWhoLiked().get(key)){
+                            case LIKED:
+                                p2LikeCount++;
+                        }
+                    }
+
+                    if (p1LikeCount>p2LikeCount){
+                        return -1;
+                    }
+                    else if(p1LikeCount<p2LikeCount){
+                        return 1;
+                    }
+                    else{
+                        return 0;
+                    }
+                }
+            });
+            newsFeedAdapter.addItems(newPosts);
+            return true;
+        }
+        else{
+            Toast.makeText(getBaseContext(),"Error occurred while sorting",Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
+    private boolean sortPostByDate() {
+        if (newPosts.size()!=0){
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+            newPosts.sort(new Comparator<Post>() {
+                @Override
+                public int compare(Post p1, Post p2) {
+                    String dateString1 = p1.getPostDate().getDate()+"_"+p1.getPostDate().getTime();
+                    String date2String2 = p2.getPostDate().getDate()+"_"+p2.getPostDate().getTime();
+                    try{
+                        Date date1 = simpleDateFormat.parse(dateString1);
+                        Date date2 = simpleDateFormat.parse(date2String2);
+                        if (date1.compareTo(date2)>0){
+                            //date 1 is after date 2 so object 1 is greater
+                            return -1;
+                        }
+                        else if(date1.compareTo(date2)<0){
+                            //date 2 is after date 1 so object 2 is greater
+                            return 1;
+                        }
+                        else{
+                            //both dates are equal
+                            return 0;
+                        }
+                    }
+                    catch (ParseException ex){
+                        ex.printStackTrace();
+                    }
+                    return 0;
+                }
+            });
+            newsFeedAdapter.addItems(newPosts);
+            return true;
+        }
+        else{
+            Toast.makeText(getBaseContext(),"Error occurred while sorting",Toast.LENGTH_SHORT).show();
+            return false;
         }
     }
 

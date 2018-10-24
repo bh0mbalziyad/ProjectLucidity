@@ -1,44 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
+    android:background="@drawable/welcomescreen_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <TextView
+        android:layout_marginTop="70dp"
+        android:layout_marginStart="15dp"
+        android:textSize="35sp"
+        android:textColor="@color/white"
+        android:text="@string/welcomescreen_text"
+        android:layout_gravity="start"
+        android:textAlignment="gravity"
+        android:id="@+id/welcome_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
     <LinearLayout
+        android:layout_marginTop="75dp"
         android:orientation="vertical"
         android:id="@+id/viewContainer"
-        android:layout_centerInParent="true"
+        android:layout_below="@id/welcome_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView
-            android:textSize="50sp"
-            android:textColor="#2367ab"
-            android:text="Welcome!"
-            android:layout_gravity="center"
-            android:textAlignment="gravity"
-            android:id="@+id/welcome_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
         <Button
             android:id="@+id/signin"
-            android:layout_margin="50dp"
+            android:layout_marginBottom="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:padding="10dp"
-            android:textColor="#ffffff"
+            android:textColor="@color/white"
             android:layout_gravity="center"
             android:textAlignment="gravity"
             android:text="Continue where you left off?"
-            android:backgroundTint="#2367ab"
+            android:backgroundTint="#3d3340"
             android:background="@drawable/rounded_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/signup"
             android:padding="10dp"
-            android:textColor="#ffffff"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:textColor="@color/white"
             android:text="New here? Come on in!"
-            android:backgroundTint="#2367ab"
+            android:backgroundTint="#3d3340"
             android:background="@drawable/rounded_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_gravity="center"
             android:textAlignment="gravity"
             android:layout_height="wrap_content" />

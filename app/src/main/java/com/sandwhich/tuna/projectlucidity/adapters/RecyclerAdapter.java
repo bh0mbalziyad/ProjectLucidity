@@ -41,7 +41,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
     }
 
     public static Context context;
-    private ImageLoader imageLoader = ImageLoader.getInstance();
     private ItemClickListener mListener;
     public RecyclerAdapter(Context c, User currentUser, ItemClickListener mListener){
         this.currentUser = currentUser;
@@ -64,7 +63,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Recycl
 
     @Override
     public RecyclerHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        imageLoader.init(ImageLoaderConfiguration.createDefault(context));
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list,parent,false);
         return new RecyclerHolder(v,this.mListener);
     }
